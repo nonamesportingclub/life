@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>No Name Sporting Club — Club Portal</title>
-  <script>
+<script>
 (function(){
   fetch(window.location.pathname, { method: 'HEAD', cache: 'no-store' })
     .then(res => {
@@ -81,16 +81,17 @@ async function playerLogin(e){
   e.preventDefault();
   const errEl = document.getElementById('pErr');
   errEl.style.display = 'none';
-  const username = document.getElementById('pUser').value.trim();
+  const typedUsername = document.getElementById('pUser').value.trim();
   const password = document.getElementById('pPass').value;
   try{
-    const player = await getPlayer(username);
+    const all = await getAllPlayers();
+    const player = all.find(p => p.username.toLowerCase() === typedUsername.toLowerCase());
     if (!player || player.password !== password){
       errEl.textContent = "That username and password don't match a player on file.";
       errEl.style.display = 'block';
       return;
     }
-    setPlayerSession(username);
+    setPlayerSession(player.username);
     window.location.href = player.lifeChoice ? 'dashboard.html' : 'dashboard.html?onboard=1';
   }catch(err){
     errEl.textContent = "Couldn't reach the club database. Check your Firebase setup.";
