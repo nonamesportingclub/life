@@ -1,22 +1,17 @@
-/* ==========================================================================
-   FIREBASE CONFIG — fill this in with YOUR project's values.
-   Get these from: Firebase Console → Project Settings → General →
-   "Your apps" → Web app → SDK setup and configuration.
-   See README.md for the full step-by-step.
-   ========================================================================== */
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyB6ATqENYiJWaTpebKfMUE3HCDtkryKo-U",
+  authDomain: "nnsc-portal.firebaseapp.com",
+  projectId: "nnsc-portal",
+  storageBucket: "nnsc-portal.firebasestorage.app",
+  messagingSenderId: "922946281032",
+  appId: "1:922946281032:web:6001131f864525c22b027d"
 };
 
-/* Discord webhook URL — Server Settings → Integrations → Webhooks → New Webhook.
-   Leave blank to disable Discord alerts entirely. */
-const DISCORD_WEBHOOK_URL = "";
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
