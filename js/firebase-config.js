@@ -15,7 +15,7 @@ const firebaseConfig = {
 
 /* Discord webhook URL — Server Settings → Integrations → Webhooks → New Webhook.
    Leave blank to disable Discord alerts entirely. */
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531485335266000916/QQt_kKiA2GcE2fra2VsoDyjOOKFAN6lWih8B-ma_QPrOj3e3PnZAT9AwMbT3aVJUuNbi";
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531521426316726292/fkVRgF1vt_MCKTONckYzKmtcWfiDa-jxJ3tkY5Bmeiv8fJvrc2EqENLfyqKn9tY_FpSl";
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
