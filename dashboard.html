@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Profile — No Name Sporting Club</title>
-  <script>
+<script>
 (function(){
   fetch(window.location.pathname, { method: 'HEAD', cache: 'no-store' })
     .then(res => {
@@ -115,22 +115,17 @@
         <input id="propLocation" type="text" placeholder="e.g. Downtown, near the training ground">
       </div>
     </div>
-    <button class="btn btn-solid" onclick="acquireProperty()">Acquire</button>
+    <div id="propBuyButtons">
+      <button class="btn btn-solid" onclick="buyPropertyCash()">Pay Cash</button>
+      <button class="btn" onclick="financeProperty()">Finance (Mortgage)</button>
+    </div>
+    <p class="section-note" style="margin-top:10px;">Financing requires a 20% down payment up front — approval depends on salary and existing debt, not your full checking balance.</p>
     <div id="propsList" style="margin-top:12px;"></div>
   </div>
 
   <div class="card">
     <div class="card-title">Mortgages</div>
-    <p class="section-note">Apply against a property you own. Approval depends on salary, existing debt, and net worth.</p>
-    <div class="field-row">
-      <div>
-        <label for="mortgageProp">Property</label>
-        <select id="mortgageProp"></select>
-      </div>
-      <div style="display:flex;align-items:flex-end;">
-        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="applyMortgage()">Apply</button>
-      </div>
-    </div>
+    <p class="section-note">Loans taken out when financing a property above. Make payments here to pay down the balance.</p>
     <div id="mortgageList"></div>
   </div>
 
@@ -179,6 +174,46 @@
     <div id="bizList" style="margin-top:12px;"></div>
   </div>
 
+  <div class="card" id="crisisBanner" style="display:none;border-color:var(--danger);">
+    <div class="card-title" style="color:var(--danger);">⚠️ Financial Crisis</div>
+    <p class="section-note">Net worth has dropped below a sustainable level. Big purchases, investing, business ventures, luxury spending, and the casino are locked until this is resolved — see Debt &amp; Bankruptcy below.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Relationships &amp; Family</div>
+    <div id="relationshipBlock"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Personal Staff <span class="pill pill-gold" id="staffWeeklyCost"></span></div>
+    <p class="section-note">Weekly salaries are deducted automatically whenever you collect payday.</p>
+    <div class="field-row">
+      <div>
+        <label for="staffPick">Available to hire</label>
+        <select id="staffPick"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="hireStaff()">Hire</button>
+      </div>
+    </div>
+    <div id="staffList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Luxury Marketplace</div>
+    <p class="section-note">Jewelry, art, yachts, and jets add to your net worth. Vacations &amp; experiences are just for fun — money spent, no lasting value.</p>
+    <div class="field-row">
+      <div>
+        <label for="luxuryPick">Browse the marketplace</label>
+        <select id="luxuryPick"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="buyLuxury()">Purchase</button>
+      </div>
+    </div>
+    <div id="luxuryList"></div>
+  </div>
+
   <div class="grid grid-2">
     <div class="card">
       <div class="card-title">Sponsorships</div>
@@ -194,6 +229,23 @@
       <button class="btn btn-ghost" onclick="checkClubNews()">Check Club News</button>
       <div id="newsLog" style="margin-top:12px;font-size:12.5px;color:var(--muted);"></div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Random Expenses</div>
+    <p class="section-note">Life happens — check in occasionally for unexpected bills (and, rarely, a scandal).</p>
+    <button class="btn btn-ghost" id="expenseBtn" onclick="checkExpenses()">Check for Emergencies</button>
+    <div id="expenseLog" style="margin-top:12px;font-size:12.5px;color:var(--muted);"></div>
+  </div>
+
+  <div class="card" id="bankruptcyCard">
+    <div class="card-title">Debt &amp; Bankruptcy</div>
+    <p class="section-note">If debt piles up past a sustainable point, filing for bankruptcy restructures everything: mortgages are cleared, most assets are seized, and reputation takes a serious hit — but you get a clean slate.</p>
+    <div class="stat" style="margin-bottom:12px;">
+      <div class="label">Times Filed</div>
+      <div class="value" id="bankruptcyCount">0</div>
+    </div>
+    <button class="btn btn-danger" onclick="fileBankruptcy()">File for Bankruptcy</button>
   </div>
 
   <div class="card">
