@@ -145,6 +145,13 @@ function webhookMarriage(playerName, partnerName){
     color: GOLD
   });
 }
+function webhookEngagement(playerName, partnerName){
+  return sendWebhook({
+    title: "💌 Engagement Announced",
+    description: `**${playerName}** is engaged to **${partnerName}**.`,
+    color: GOLD
+  });
+}
 function webhookDivorce(playerName, partnerName){
   return sendWebhook({
     title: "💔 Divorce Announced",

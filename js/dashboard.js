@@ -497,7 +497,7 @@ function renderRelationship(){
   if (r.status === 'Single'){
     html += `
       <div class="field-row">
-        <div><label for="partnerName">Partner's name</label><input id="partnerName" type="text" placeholder="e.g. Jamie Rivera"></div>
+        <div><label for="partnerName">Partner's name (optional)</label><input id="partnerName" type="text" placeholder="Leave blank to auto-generate"></div>
         <div style="display:flex;align-items:flex-end;"><button class="btn btn-solid" style="margin-bottom:14px;" onclick="propose()">Propose</button></div>
       </div>`;
   } else if (r.status === 'Engaged'){
@@ -515,19 +515,18 @@ function renderRelationship(){
   } else if (r.status === 'Divorced'){
     html += `<p class="section-note">Divorced. Previously married to ${esc(r.partnerName)}.</p>
       <div class="field-row">
-        <div><label for="partnerName">New partner's name</label><input id="partnerName" type="text" placeholder="e.g. Jamie Rivera"></div>
+        <div><label for="partnerName">New partner's name (optional)</label><input id="partnerName" type="text" placeholder="Leave blank to auto-generate"></div>
         <div style="display:flex;align-items:flex-end;"><button class="btn btn-solid" style="margin-bottom:14px;" onclick="propose()">Propose</button></div>
       </div>`;
   }
 
   if (r.status === 'Married'){
-    const last = player.lastKidTry ? new Date(player.lastKidTry) : null;
+    const last = player.lastKidBorn ? new Date(player.lastKidBorn) : null;
     const ready = !last || (Date.now()-last) >= KID_COOLDOWN_DAYS*86400000;
     html += `<hr class="hairline"><label for="babyName">Try for a baby (name if it happens)</label>
       <input id="babyName" type="text" placeholder="e.g. Nova">
-      <button class="btn ${ready?'btn-solid':'btn-ghost'}" ${ready?'':'disabled'} onclick="tryForBaby()">
-        ${ready ? 'Try for a Baby' : `Next attempt in ${Math.ceil(KID_COOLDOWN_DAYS - (Date.now()-last)/86400000)}d`}
-      </button>`;
+      <button class="btn btn-solid" onclick="tryForBaby()">Try for a Baby</button>
+      ${!ready ? `<p class="section-note">A new baby can arrive at most once every ${KID_COOLDOWN_DAYS} days — next one possible in ${Math.ceil(KID_COOLDOWN_DAYS - (Date.now()-last)/86400000)}d.</p>` : ''}`;
   }
 
   html += `<hr class="hairline"><div class="card-title" style="font-size:11px;">Kids</div>` +
@@ -537,11 +536,21 @@ function renderRelationship(){
   document.getElementById('relationshipBlock').innerHTML = html;
 }
 
+const NPC_FIRST_NAMES = ["Jordan","Avery","Casey","Riley","Morgan","Skylar","Reese","Dakota","Rowan","Emerson",
+  "Quinn","Harper","Sawyer","Elliot","Peyton","Marlowe","Finley","Blake","Remy","Kai"];
+const NPC_LAST_NAMES = ["Rivera","Bennett","Hayes","Whitfield","Sorensen","Okafor","Delacroix","Vance","Marchetti","Lindqvist",
+  "Ashworth","Reyes","Callahan","Beaumont","Ferreira","Osei","Kowalski","Novak","Prescott","Hartley"];
+function generateNpcName(){
+  const f = NPC_FIRST_NAMES[Math.floor(Math.random()*NPC_FIRST_NAMES.length)];
+  const l = NPC_LAST_NAMES[Math.floor(Math.random()*NPC_LAST_NAMES.length)];
+  return `${f} ${l}`;
+}
+
 async function propose(){
-  const name = document.getElementById('partnerName').value.trim();
-  if (!name) return toast('Enter a name first.', true);
+  const name = document.getElementById('partnerName').value.trim() || generateNpcName();
   player.relationship = { status:'Engaged', partnerName: name, since: null, prenup: false };
   await save(); renderRelationship();
+  webhookEngagement(player.name, name);
 }
 async function callOffEngagement(){
   player.relationship = { status:'Single', partnerName:'', since:null, prenup:false };
@@ -571,20 +580,23 @@ async function fileDivorce(){
   webhookDivorce(player.name, partnerName);
 }
 async function tryForBaby(){
-  const last = player.lastKidTry ? new Date(player.lastKidTry) : null;
-  if (last && (Date.now()-last) < KID_COOLDOWN_DAYS*86400000) return;
-  player.lastKidTry = Date.now();
+  const last = player.lastKidBorn ? new Date(player.lastKidBorn) : null;
+  if (last && (Date.now()-last) < KID_COOLDOWN_DAYS*86400000){
+    const days = Math.ceil(KID_COOLDOWN_DAYS - (Date.now()-last)/86400000);
+    return toast(`Already expecting recently — a new baby can't arrive for another ${days}d.`, true);
+  }
   const name = (document.getElementById('babyName')?.value || '').trim() || 'Unnamed';
   const success = Math.random() < 0.7;
   if (success){
     player.kids = player.kids || [];
     player.kids.push({ name, born: Date.now() });
+    player.lastKidBorn = Date.now(); // cooldown starts only on an actual birth
     await save(); renderRelationship();
     toast(`Congratulations! Welcome, ${name}.`);
     webhookBaby(player.name, name);
   } else {
     await save(); renderRelationship();
-    toast('Not this time — try again in a few weeks.');
+    toast('Not this time — feel free to try again.');
   }
 }
 
