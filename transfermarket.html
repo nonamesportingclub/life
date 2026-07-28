@@ -77,6 +77,10 @@ async function init(){
           </div>
           <span class="mono" style="font-size:12px;color:var(--gold);">${c.percent}%</span>
         </div>`).join('') : '<div class="empty-state" style="padding:14px;">No declared interest from other clubs.</div>'}
+      ${(p.declaredInterest||[]).length ? `
+        <div class="card-title" style="font-size:11px;margin-top:14px;">Player Has Publicly Expressed Interest In</div>
+        <div class="tag-strip">${p.declaredInterest.map(d=>`<span class="pill pill-gold">${esc(d.club)}</span>`).join('')}</div>
+      ` : ''}
     </div>
   `).join('') || '<div class="empty-state">No players on the market yet.</div>';
 
