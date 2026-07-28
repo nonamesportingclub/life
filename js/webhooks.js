@@ -122,3 +122,68 @@ function webhookRetirement(playerName){
     color: GOLD
   });
 }
+function webhookGamble(playerName, game, won, amount){
+  return sendWebhook({
+    title: won ? "🎰 Casino Night" : "🎰 Casino Night",
+    description: won
+      ? `**${playerName}** walked away from the ${game} table with a ${magnitudeWord(amount)} win.`
+      : `**${playerName}** had a rough night at the ${game} table, dropping a ${magnitudeWord(amount)} sum.`,
+    color: won ? 0x4E9A6A : 0xB5473A
+  });
+}
+function webhookDeclareInterest(playerName, club){
+  return sendWebhook({
+    title: "📰 Player Declares Interest",
+    description: `**${playerName}** has publicly expressed interest in a move to **${club}**.`,
+    color: GOLD
+  });
+}
+function webhookMarriage(playerName, partnerName){
+  return sendWebhook({
+    title: "💍 Wedding Bells",
+    description: `**${playerName}** has married **${partnerName}**. The club wishes them well.`,
+    color: GOLD
+  });
+}
+function webhookDivorce(playerName, partnerName){
+  return sendWebhook({
+    title: "💔 Divorce Announced",
+    description: `**${playerName}** and **${partnerName}** have finalized their divorce. Terms are described as **private**.`,
+    color: 0xB5473A
+  });
+}
+function webhookBaby(playerName, babyName){
+  return sendWebhook({
+    title: "👶 Family News",
+    description: `**${playerName}** and their partner have welcomed a new addition to the family: **${babyName}**.`,
+    color: GOLD
+  });
+}
+function webhookBankruptcy(playerName){
+  return sendWebhook({
+    title: "⚠️ Financial Restructuring",
+    description: `**${playerName}** has filed for bankruptcy protection after a period of financial strain. Assets have been restructured.`,
+    color: 0xB5473A
+  });
+}
+function webhookScandal(playerName, headline){
+  return sendWebhook({
+    title: "🔥 Scandal",
+    description: `**${playerName}** — ${headline}`,
+    color: 0xB5473A
+  });
+}
+function webhookExpense(playerName, headline, amount){
+  return sendWebhook({
+    title: "🧾 Unexpected Expense",
+    description: `**${playerName}** — ${headline}. Described as a **${magnitudeWord(amount)}** hit to the wallet.`,
+    color: 0xB5473A
+  });
+}
+function webhookClubCreated(founderName, clubName, category){
+  return sendWebhook({
+    title: "🏛️ New Club Founded",
+    description: `**${founderName}** has founded a new club: **${clubName}** (${category}). Open to any player who wants to join.`,
+    color: GOLD
+  });
+}

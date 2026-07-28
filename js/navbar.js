@@ -9,12 +9,14 @@ function renderSidebar(active, identity){
     ['transfermarket.html','transfermarket','Transfer Market'],
     ['contracts.html','contracts','Contract List'],
     ['leaderboard.html','leaderboard','Leaderboards'],
+    ['clubs.html','clubs','Player Clubs'],
   ];
   const adminLinks = [
     ['admin.html','admin','Admin Panel'],
     ['transfermarket.html','transfermarket','Transfer Market'],
     ['contracts.html','contracts','Contract List'],
     ['leaderboard.html','leaderboard','Leaderboards'],
+    ['clubs.html','clubs','Player Clubs'],
   ];
   const links = identity.type === 'admin' ? adminLinks : playerLinks;
 

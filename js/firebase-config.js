@@ -1,15 +1,21 @@
+/* ==========================================================================
+   FIREBASE CONFIG — fill this in with YOUR project's values.
+   Get these from: Firebase Console → Project Settings → General →
+   "Your apps" → Web app → SDK setup and configuration.
+   See README.md for the full step-by-step.
+   ========================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyB6ATqENYiJWaTpebKfMUE3HCDtkryKo-U",
-  authDomain: "nnsc-portal.firebaseapp.com",
-  projectId: "nnsc-portal",
-  storageBucket: "nnsc-portal.firebasestorage.app",
-  messagingSenderId: "922946281032",
-  appId: "1:922946281032:web:6001131f864525c22b027d"
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
 };
 
 /* Discord webhook URL — Server Settings → Integrations → Webhooks → New Webhook.
    Leave blank to disable Discord alerts entirely. */
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531485335266000916/QQt_kKiA2GcE2fra2VsoDyjOOKFAN6lWih8B-ma_QPrOj3e3PnZAT9AwMbT3aVJUuNbi";
+const DISCORD_WEBHOOK_URL = "";
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();

@@ -10,6 +10,7 @@
 const PLAYERS = () => db.collection('players');
 const RUMORS  = () => db.collection('rumors');
 const CONFIG  = (doc) => db.collection('config').doc(doc);
+const CLUBS   = () => db.collection('clubs');
 
 /* ---------- Player schema defaults (used when admin creates a new player) --------- */
 function blankPlayer(username){
@@ -19,7 +20,8 @@ function blankPlayer(username){
     team: "No Name Sporting Club", transferStatus: "Not listed",
     salary: 0, marketValue: 0,
     contract: { start: "", years: 1, releaseClause: 0, bonuses: "" },
-    interestedClubs: [],           // [{club, percent}]
+    interestedClubs: [],           // [{club, percent}]  -- clubs interested in the player (admin-set)
+    declaredInterest: [],          // [{club, date}]      -- player self-declaring interest in leaving, capped at 2 per 3 days
     careerHistory: [],             // [{year, event}]
     lifeChoice: "",                // set once by player
     reputation: 60,                 // 0-100 fan approval
@@ -31,6 +33,17 @@ function blankPlayer(username){
     sponsorships: [],               // [{brand, tier, since}]
     businessVentures: [],           // [{name, type, status}]
     charityLog: [],                 // [{cause, note, date}]
+    gambling: { wagered: 0, won: 0, lost: 0, biggestWin: 0, log: [] }, // log: [{game, bet, result, amount, date}]
+    relationship: { status: "Single", partnerName: "", since: null, prenup: false }, // Single/Engaged/Married/Divorced
+    kids: [],                        // [{name, born}]
+    lastKidTry: null,                // cooldown gate, ~once per 3 weeks
+    staff: [],                       // [{role, name, weeklySalary, hiredDate}]
+    luxuryItems: [],                 // [{name, category, value, acquired}] -- jewelry/art/yachts/jets
+    experienceLog: [],               // [{name, category, cost, date}] -- vacations etc, no lasting asset value
+    expenseLog: [],                  // [{headline, amount, date}]
+    lastExpenseCheck: null,
+    lastNewsCheck: null,
+    bankruptcyCount: 0,
     retired: false,
     createdAt: Date.now()
   };
@@ -92,8 +105,13 @@ function netWorth(p){
   const invest = (p.investments||[]).reduce((s,i)=> s + (i.principal||0) * (1 + (i.performancePct||0)/100), 0);
   const props = (p.properties||[]).reduce((s,x)=> s + (x.value||0), 0);
   const cars = (p.cars||[]).reduce((s,x)=> s + (x.value||0), 0);
+  const luxury = (p.luxuryItems||[]).reduce((s,x)=> s + (x.value||0), 0);
   const debt = (p.mortgages||[]).filter(m=>m.status==='Approved').reduce((s,m)=> s + (m.balance||0), 0);
-  return Math.round(bank + invest + props + cars - debt);
+  return Math.round(bank + invest + props + cars + luxury - debt);
+}
+const BANKRUPTCY_THRESHOLD = -250000;
+function inFinancialCrisis(p){
+  return netWorth(p) < BANKRUPTCY_THRESHOLD;
 }
 function valueRating(p){
   // crude "worth it" flag: salary per OVR point vs league-ish baseline

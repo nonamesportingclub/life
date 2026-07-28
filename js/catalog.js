@@ -2010,3 +2010,395 @@ const PROPERTY_CATALOG = [
     "blurb": "An estate with its own private megayacht berth."
   }
 ];
+
+/* ---------- Staff you can hire — cost is a weekly deduction taken at payday ---------- */
+const STAFF_CATALOG = [
+  {
+    "role": "Agent",
+    "name": "Marcus Reyes",
+    "weeklySalary": 1200,
+    "blurb": "Handles contract talks and takes a cut of new deals."
+  },
+  {
+    "role": "Agent",
+    "name": "Priya Chandra",
+    "weeklySalary": 1800,
+    "blurb": "High-profile agent with connections at bigger clubs."
+  },
+  {
+    "role": "Financial Advisor",
+    "name": "Daniel Okafor",
+    "weeklySalary": 900,
+    "blurb": "Keeps an eye on your portfolio and spending habits."
+  },
+  {
+    "role": "Financial Advisor",
+    "name": "Elena Voss",
+    "weeklySalary": 1500,
+    "blurb": "Boutique wealth manager, works with a handful of elite clients."
+  },
+  {
+    "role": "PR Manager",
+    "name": "Jordan Blake",
+    "weeklySalary": 1100,
+    "blurb": "Manages your public image and handles media requests."
+  },
+  {
+    "role": "PR Manager",
+    "name": "Sofia Marchetti",
+    "weeklySalary": 1700,
+    "blurb": "Crisis-comms specialist \u2014 the person you call when things go sideways."
+  },
+  {
+    "role": "Personal Stylist",
+    "name": "Th\u00e9o Laurent",
+    "weeklySalary": 800,
+    "blurb": "Keeps your wardrobe on point for events and appearances."
+  },
+  {
+    "role": "Personal Trainer",
+    "name": "Kai Anderson",
+    "weeklySalary": 700,
+    "blurb": "Off-field fitness and lifestyle coaching."
+  },
+  {
+    "role": "Private Chef",
+    "name": "Amara Osei",
+    "weeklySalary": 950,
+    "blurb": "Prepares meals at home, big into performance nutrition."
+  },
+  {
+    "role": "Security Detail",
+    "name": "Viktor Petrov",
+    "weeklySalary": 1400,
+    "blurb": "Personal security for public appearances and travel."
+  },
+  {
+    "role": "Chauffeur",
+    "name": "Lucas Ferreira",
+    "weeklySalary": 650,
+    "blurb": "Drives the collection so you don't have to."
+  },
+  {
+    "role": "House Manager",
+    "name": "Nadia Hassan",
+    "weeklySalary": 1000,
+    "blurb": "Runs the household \u2014 staff scheduling, maintenance, the works."
+  }
+];
+
+/* ---------- Luxury Marketplace — assets add to net worth, experiences don't ---------- */
+const LUXURY_CATALOG = [
+  {
+    "name": "Tag Heuer Carrera",
+    "category": "Jewelry & Watches",
+    "price": 6500,
+    "asset": true
+  },
+  {
+    "name": "Omega Seamaster",
+    "category": "Jewelry & Watches",
+    "price": 9500,
+    "asset": true
+  },
+  {
+    "name": "Rolex Submariner",
+    "category": "Jewelry & Watches",
+    "price": 14000,
+    "asset": true
+  },
+  {
+    "name": "Rolex Daytona",
+    "category": "Jewelry & Watches",
+    "price": 32000,
+    "asset": true
+  },
+  {
+    "name": "Cartier Tank",
+    "category": "Jewelry & Watches",
+    "price": 15000,
+    "asset": true
+  },
+  {
+    "name": "Cartier Love Bracelet",
+    "category": "Jewelry & Watches",
+    "price": 8500,
+    "asset": true
+  },
+  {
+    "name": "Audemars Piguet Royal Oak",
+    "category": "Jewelry & Watches",
+    "price": 68000,
+    "asset": true
+  },
+  {
+    "name": "Patek Philippe Nautilus",
+    "category": "Jewelry & Watches",
+    "price": 145000,
+    "asset": true
+  },
+  {
+    "name": "Richard Mille RM 11",
+    "category": "Jewelry & Watches",
+    "price": 320000,
+    "asset": true
+  },
+  {
+    "name": "Diamond Tennis Bracelet",
+    "category": "Jewelry & Watches",
+    "price": 45000,
+    "asset": true
+  },
+  {
+    "name": "Custom Diamond Chain",
+    "category": "Jewelry & Watches",
+    "price": 60000,
+    "asset": true
+  },
+  {
+    "name": "Tiffany & Co. Necklace",
+    "category": "Jewelry & Watches",
+    "price": 22000,
+    "asset": true
+  },
+  {
+    "name": "Van Cleef & Arpels Alhambra Set",
+    "category": "Jewelry & Watches",
+    "price": 38000,
+    "asset": true
+  },
+  {
+    "name": "Bespoke Engagement Ring",
+    "category": "Jewelry & Watches",
+    "price": 55000,
+    "asset": true
+  },
+  {
+    "name": "Vintage Pocket Watch Collection",
+    "category": "Jewelry & Watches",
+    "price": 18000,
+    "asset": true
+  },
+  {
+    "name": "Iced-Out Pendant",
+    "category": "Jewelry & Watches",
+    "price": 90000,
+    "asset": true
+  },
+  {
+    "name": "Emerging Artist Oil Painting",
+    "category": "Art & Collectibles",
+    "price": 8000,
+    "asset": true
+  },
+  {
+    "name": "Limited Edition Fine Art Print",
+    "category": "Art & Collectibles",
+    "price": 4500,
+    "asset": true
+  },
+  {
+    "name": "Vintage Sports Memorabilia Set",
+    "category": "Art & Collectibles",
+    "price": 25000,
+    "asset": true
+  },
+  {
+    "name": "Signed Match-Worn Jersey Display",
+    "category": "Art & Collectibles",
+    "price": 12000,
+    "asset": true
+  },
+  {
+    "name": "Rare Sneaker Collection",
+    "category": "Art & Collectibles",
+    "price": 40000,
+    "asset": true
+  },
+  {
+    "name": "Bronze Sculpture Piece",
+    "category": "Art & Collectibles",
+    "price": 60000,
+    "asset": true
+  },
+  {
+    "name": "Contemporary Gallery Painting",
+    "category": "Art & Collectibles",
+    "price": 150000,
+    "asset": true
+  },
+  {
+    "name": "Mid-Century Modern Furniture Set",
+    "category": "Art & Collectibles",
+    "price": 35000,
+    "asset": true
+  },
+  {
+    "name": "Classic Car Model Collection",
+    "category": "Art & Collectibles",
+    "price": 20000,
+    "asset": true
+  },
+  {
+    "name": "Blue-Chip Contemporary Artwork",
+    "category": "Art & Collectibles",
+    "price": 900000,
+    "asset": true
+  },
+  {
+    "name": "Private Wine Cellar Collection",
+    "category": "Art & Collectibles",
+    "price": 180000,
+    "asset": true
+  },
+  {
+    "name": "Rare Book & Manuscript Collection",
+    "category": "Art & Collectibles",
+    "price": 75000,
+    "asset": true
+  },
+  {
+    "name": "Center Console Day Boat",
+    "category": "Yachts",
+    "price": 120000,
+    "asset": true
+  },
+  {
+    "name": "Sport Fishing Yacht",
+    "category": "Yachts",
+    "price": 480000,
+    "asset": true
+  },
+  {
+    "name": "Cabin Cruiser",
+    "category": "Yachts",
+    "price": 950000,
+    "asset": true
+  },
+  {
+    "name": "Mid-Size Motor Yacht",
+    "category": "Yachts",
+    "price": 3200000,
+    "asset": true
+  },
+  {
+    "name": "Flybridge Luxury Yacht",
+    "category": "Yachts",
+    "price": 8500000,
+    "asset": true
+  },
+  {
+    "name": "Superyacht",
+    "category": "Yachts",
+    "price": 22000000,
+    "asset": true
+  },
+  {
+    "name": "Explorer-Class Superyacht",
+    "category": "Yachts",
+    "price": 45000000,
+    "asset": true
+  },
+  {
+    "name": "Megayacht",
+    "category": "Yachts",
+    "price": 90000000,
+    "asset": true
+  },
+  {
+    "name": "Light Jet",
+    "category": "Private Jets",
+    "price": 3200000,
+    "asset": true
+  },
+  {
+    "name": "Midsize Business Jet",
+    "category": "Private Jets",
+    "price": 9500000,
+    "asset": true
+  },
+  {
+    "name": "Super-Midsize Jet",
+    "category": "Private Jets",
+    "price": 16000000,
+    "asset": true
+  },
+  {
+    "name": "Long-Range Jet",
+    "category": "Private Jets",
+    "price": 32000000,
+    "asset": true
+  },
+  {
+    "name": "Ultra-Long-Range Jet",
+    "category": "Private Jets",
+    "price": 58000000,
+    "asset": true
+  },
+  {
+    "name": "Airliner-Converted VIP Jet",
+    "category": "Private Jets",
+    "price": 95000000,
+    "asset": true
+  },
+  {
+    "name": "Weekend City Getaway",
+    "category": "Vacations & Experiences",
+    "price": 4500,
+    "asset": false
+  },
+  {
+    "name": "All-Inclusive Tropical Resort Week",
+    "category": "Vacations & Experiences",
+    "price": 12000,
+    "asset": false
+  },
+  {
+    "name": "European Grand Tour",
+    "category": "Vacations & Experiences",
+    "price": 28000,
+    "asset": false
+  },
+  {
+    "name": "Private Villa Rental \u2014 Two Weeks",
+    "category": "Vacations & Experiences",
+    "price": 45000,
+    "asset": false
+  },
+  {
+    "name": "Private Island Rental \u2014 One Week",
+    "category": "Vacations & Experiences",
+    "price": 120000,
+    "asset": false
+  },
+  {
+    "name": "Around-the-World Private Charter",
+    "category": "Vacations & Experiences",
+    "price": 350000,
+    "asset": false
+  },
+  {
+    "name": "Ski Chalet Season Rental",
+    "category": "Vacations & Experiences",
+    "price": 90000,
+    "asset": false
+  },
+  {
+    "name": "Safari Expedition Package",
+    "category": "Vacations & Experiences",
+    "price": 60000,
+    "asset": false
+  },
+  {
+    "name": "Space Tourism Flight",
+    "category": "Vacations & Experiences",
+    "price": 450000,
+    "asset": false
+  },
+  {
+    "name": "Formula 1 VIP Paddock Weekend",
+    "category": "Vacations & Experiences",
+    "price": 85000,
+    "asset": false
+  }
+];
