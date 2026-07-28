@@ -29,6 +29,7 @@ async function init(){
 
   populateCatalogs();
   populateStaffAndLuxury();
+  await populateTransferRecipients();
   renderAll();
 
   const params = new URLSearchParams(window.location.search);
@@ -108,6 +109,7 @@ function renderAll(){
   renderDossier();
   renderBanking();
   renderCharity();
+  renderTransfer();
   renderCars();
   renderProperties();
   renderMortgageOptions();
@@ -887,6 +889,94 @@ async function donateCharity(){
   renderBanking(); renderStats(); renderCharity(); renderReputation();
   document.getElementById('charityCause').value=''; document.getElementById('charityAmt').value='';
   webhookCharity(player.name, cause);
+}
+
+/* ---------------- Player-to-Player Transfers ---------------- */
+
+const DAILY_TRANSFER_LIMIT = 5000000;
+const GIFT_TAX_EXEMPTION = 50000;   // per single gift, tax-free up to this
+const GIFT_TAX_RATE = 0.20;         // sender pays this on the amount above the exemption
+
+async function populateTransferRecipients(){
+  const all = await getAllPlayers();
+  const others = all.filter(p => p.username !== player.username && !p.retired);
+  const sel = document.getElementById('transferRecipient');
+  sel.innerHTML = others.length
+    ? others.map(p=>`<option value="${esc(p.username)}">${esc(p.name)} (${esc(p.username)})</option>`).join('')
+    : '<option value="">No other players yet</option>';
+}
+
+function todaysSentTotal(){
+  const cutoff = Date.now() - 24*3600000;
+  return (player.transferLog||[]).filter(t=>t.date>=cutoff).reduce((s,t)=>s+t.amount,0);
+}
+function giftTaxFor(amount){
+  const taxable = Math.max(0, amount - GIFT_TAX_EXEMPTION);
+  return Math.round(taxable * GIFT_TAX_RATE);
+}
+
+function renderTransfer(){
+  const sent = todaysSentTotal();
+  const remaining = Math.max(0, DAILY_TRANSFER_LIMIT - sent);
+  document.getElementById('transferLimitBadge').textContent = `${fmtMoney(remaining)} left today`;
+  updateTransferPreview();
+
+  const sentLog = (player.transferLog||[]).slice().reverse().slice(0,5).map(t=>
+    `<div style="margin-bottom:6px;">➡️ Sent <strong>${esc(t.toName||t.to)}</strong> ${fmtMoney(t.amount)}${t.tax?` (+${fmtMoney(t.tax)} tax)`:''} — ${fmtDate(t.date)}</div>`
+  );
+  const receivedLog = (player.receivedLog||[]).slice().reverse().slice(0,5).map(t=>
+    `<div style="margin-bottom:6px;">⬅️ Received from <strong>${esc(t.fromName||t.from)}</strong> ${fmtMoney(t.amount)} — ${fmtDate(t.date)}</div>`
+  );
+  document.getElementById('transferLog').innerHTML = [...sentLog, ...receivedLog].length
+    ? [...sentLog, ...receivedLog].join('') : 'No transfers yet.';
+}
+
+function updateTransferPreview(){
+  const amt = Number(document.getElementById('transferSendAmt').value);
+  const el = document.getElementById('transferPreview');
+  if (!amt || amt<=0){ el.textContent = ''; return; }
+  const tax = giftTaxFor(amt);
+  el.textContent = tax > 0
+    ? `Recipient gets ${fmtMoney(amt)}. You pay ${fmtMoney(amt)} + ${fmtMoney(tax)} gift tax = ${fmtMoney(amt+tax)} total.`
+    : `Recipient gets ${fmtMoney(amt)}. Under the $${GIFT_TAX_EXEMPTION.toLocaleString()} exemption — no tax.`;
+}
+
+async function sendMoneyToPlayer(){
+  if (!checkCooldown('spending', 3000)) return;
+  const recipientUsername = document.getElementById('transferRecipient').value;
+  const amt = Number(document.getElementById('transferSendAmt').value);
+  if (!recipientUsername) return toast('Pick someone to send to.', true);
+  if (!amt || amt <= 0) return toast('Enter a valid amount.', true);
+
+  const sent = todaysSentTotal();
+  if (sent + amt > DAILY_TRANSFER_LIMIT){
+    return toast(`That would put you over the $5M daily limit. You have ${fmtMoney(Math.max(0,DAILY_TRANSFER_LIMIT-sent))} left today.`, true);
+  }
+
+  const tax = giftTaxFor(amt);
+  const totalCost = amt + tax;
+  if (totalCost > player.bank.checking){
+    return toast(`Not enough in checking — this send costs ${fmtMoney(totalCost)} after gift tax.`, true);
+  }
+
+  const recipient = await getPlayer(recipientUsername);
+  if (!recipient) return toast('Recipient not found.', true);
+
+  recipient.bank = recipient.bank || { checking:0, savings:0 };
+  recipient.bank.checking += amt;
+  recipient.receivedLog = recipient.receivedLog || [];
+  recipient.receivedLog.push({ from: player.username, fromName: player.name, amount: amt, date: Date.now() });
+  await savePlayer(recipient);
+
+  player.bank.checking -= totalCost;
+  player.transferLog = player.transferLog || [];
+  player.transferLog.push({ to: recipientUsername, toName: recipient.name, amount: amt, tax, date: Date.now() });
+  await save();
+
+  renderBanking(); renderStats(); renderTransfer();
+  document.getElementById('transferSendAmt').value = '';
+  toast(`Sent ${fmtMoney(amt)} to ${recipient.name}${tax?` (+${fmtMoney(tax)} gift tax)`:''}.`);
+  webhookGift(player.name, recipient.name, amt, tax>0);
 }
 
 function blockIfCrisis(){

@@ -215,3 +215,10 @@ function webhookSale(playerName, itemName, category, amount, gained){
     color: gained ? 0x4E9A6A : GOLD
   });
 }
+function webhookGift(fromName, toName, amount, taxed){
+  return sendWebhook({
+    title: "🤲 Player-to-Player Transfer",
+    description: `**${fromName}** sent **${toName}** a ${magnitudeWord(amount)} sum${taxed ? ', with gift tax applied on the sender\'s side' : ''}.`,
+    color: GOLD
+  });
+}

@@ -43,6 +43,8 @@ function blankPlayer(username){
     luxuryItems: [],                 // [{name, category, value, acquired}] -- jewelry/art/yachts/jets
     experienceLog: [],               // [{name, category, cost, date}] -- vacations etc, no lasting asset value
     expenseLog: [],                  // [{headline, amount, date}]
+    transferLog: [],                 // [{to, toName, amount, tax, date}] -- money sent to other players
+    receivedLog: [],                 // [{from, fromName, amount, date}] -- money received from other players
     lastExpenseCheck: null,
     lastNewsCheck: null,
     bankruptcyCount: 0,
