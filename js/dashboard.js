@@ -21,12 +21,60 @@ async function init(){
   document.getElementById('pageTitle').textContent = player.name || player.username;
   document.getElementById('pageSub').textContent = player.retired ? "Retired — Club Legend" : `${player.position || '—'} · No Name Sporting Club`;
 
+  populateCatalogs();
   renderAll();
 
   const params = new URLSearchParams(window.location.search);
   if (!player.lifeChoice || params.get('onboard')){
     document.getElementById('onboardModal').style.display = 'flex';
   }
+}
+
+/* ---------------- Catalog (cars + properties) ---------------- */
+
+function groupByTier(list){
+  const groups = {};
+  list.forEach((item, i)=>{
+    if (!groups[item.tier]) groups[item.tier] = [];
+    groups[item.tier].push({ ...item, _idx: i });
+  });
+  return groups;
+}
+
+function buildCarOptions(filterText){
+  const term = (filterText||'').trim().toLowerCase();
+  const filtered = term ? CAR_CATALOG.filter(c=>c.name.toLowerCase().includes(term)) : CAR_CATALOG;
+  const indexed = filtered.map(c => ({ ...c, _idx: CAR_CATALOG.indexOf(c) }));
+  const groups = {};
+  indexed.forEach(c=>{ (groups[c.tier] = groups[c.tier] || []).push(c); });
+  const order = ['Economy','Sport','Luxury','Exotic','Hypercar'];
+  const sel = document.getElementById('carTier');
+  sel.innerHTML = order.filter(t=>groups[t]).map(tier=>
+    `<optgroup label="${tier}">` +
+    groups[tier].map(c=>`<option value="${c._idx}">${esc(c.name)} — ${fmtMoney(c.price)}</option>`).join('') +
+    `</optgroup>`
+  ).join('') || '<option value="">No matches</option>';
+}
+function filterCarSelect(){
+  buildCarOptions(document.getElementById('carSearch').value);
+}
+
+function populateCatalogs(){
+  buildCarOptions('');
+  const order = ['Rental','Starter Home','Mid-Range Home','Luxury Home','Mansion / Estate','Ultra Luxury'];
+  const groups = groupByTier(PROPERTY_CATALOG);
+  const sel = document.getElementById('propTier');
+  sel.innerHTML = order.filter(t=>groups[t]).map(tier=>
+    `<optgroup label="${tier}">` +
+    groups[tier].map(p=>`<option value="${p._idx}">${esc(p.name)} — ${p.mode==='rent'?fmtMoney(p.price)+'/mo':fmtMoney(p.price)}</option>`).join('') +
+    `</optgroup>`
+  ).join('');
+  updatePropBlurb();
+}
+function updatePropBlurb(){
+  const idx = Number(document.getElementById('propTier').value);
+  const p = PROPERTY_CATALOG[idx];
+  document.getElementById('propBlurb').textContent = p ? p.blurb : '';
 }
 
 function renderAll(){
@@ -255,29 +303,32 @@ async function donateCharity(){
 }
 
 async function buyCar(){
-  const [name, price] = document.getElementById('carTier').value.split('|');
-  const p = Number(price);
-  if (p > player.bank.checking) return toast("Not enough in checking for that purchase.", true);
-  player.bank.checking -= p;
+  const idx = Number(document.getElementById('carTier').value);
+  const item = CAR_CATALOG[idx];
+  if (!item) return toast('Pick a car first.', true);
+  if (item.price > player.bank.checking) return toast("Not enough in checking for that purchase.", true);
+  player.bank.checking -= item.price;
   player.cars = player.cars || [];
-  player.cars.push({ name, value: p, acquired: Date.now() });
+  player.cars.push({ name: item.name, value: item.price, acquired: Date.now() });
   await save();
   renderBanking(); renderStats(); renderCars();
-  webhookPurchase(player.name, name, 'car', p);
+  webhookPurchase(player.name, item.name, 'car', item.price);
   await maybeNetWorthShakeup();
 }
 
 async function acquireProperty(){
-  const [name, price, mode] = document.getElementById('propTier').value.split('|');
+  const idx = Number(document.getElementById('propTier').value);
+  const item = PROPERTY_CATALOG[idx];
+  if (!item) return toast('Pick a property first.', true);
   const location = document.getElementById('propLocation').value.trim() || 'Location not disclosed';
-  const p = Number(price);
-  if (mode === 'buy' && p > player.bank.checking) return toast("Not enough in checking to buy that property.", true);
-  if (mode === 'buy') player.bank.checking -= p;
+  const mode = item.mode; // 'buy' or 'rent'
+  if (mode === 'buy' && item.price > player.bank.checking) return toast("Not enough in checking to buy that property.", true);
+  if (mode === 'buy') player.bank.checking -= item.price;
   player.properties = player.properties || [];
-  player.properties.push({ name, value: mode==='buy'?p:0, location, mode: mode==='buy'?'Owned':'Renting', acquired: Date.now() });
+  player.properties.push({ name: item.name, value: mode==='buy'?item.price:0, location, mode: mode==='buy'?'Owned':'Renting', acquired: Date.now() });
   await save();
   renderBanking(); renderStats(); renderProperties();
-  webhookPurchase(player.name, `${name} (${location})`, 'property', p);
+  webhookPurchase(player.name, `${item.name} (${location})`, 'property', item.price);
   await maybeNetWorthShakeup();
 }
 
