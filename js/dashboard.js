@@ -192,22 +192,38 @@ function renderCharity(){
 
 function renderCars(){
   document.getElementById('carsCount').textContent = (player.cars||[]).length;
-  document.getElementById('carsList').innerHTML = (player.cars||[]).map(c=>
-    `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-      <div><div class="value" style="font-size:14px;">${esc(c.name)}</div><div class="label">Acquired ${fmtDate(c.acquired)}</div></div>
-      <span class="pill pill-gold">${fmtMoney(c.value)}</span>
-    </div>`
-  ).join('') || '<div class="empty-state">Garage is empty.</div>';
+  document.getElementById('carsList').innerHTML = (player.cars||[]).map((c,i)=>{
+    const cur = currentAssetValue(c.value, c.acquired, 'car');
+    const down = cur < c.value;
+    return `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="value" style="font-size:14px;">${esc(c.name)}</div><div class="label">Bought ${fmtDate(c.acquired)} for ${fmtMoney(c.value)}</div></div>
+      <div style="text-align:right;">
+        <span class="pill ${down?'pill-bad':'pill-good'}">${fmtMoney(cur)} now</span><br>
+        <button class="btn btn-sm btn-ghost" style="margin-top:6px;" onclick="sellCar(${i})">Sell</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Garage is empty.</div>';
 }
 
 function renderProperties(){
   document.getElementById('propsCount').textContent = (player.properties||[]).length;
-  document.getElementById('propsList').innerHTML = (player.properties||[]).map(p=>
-    `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-      <div><div class="value" style="font-size:14px;">${esc(p.name)}</div><div class="label">${esc(p.location||'Location not set')} · ${esc(p.mode)}</div></div>
-      <span class="pill pill-gold">${fmtMoney(p.value)}</span>
-    </div>`
-  ).join('') || '<div class="empty-state">No properties yet.</div>';
+  document.getElementById('propsList').innerHTML = (player.properties||[]).map((p,i)=>{
+    if (p.mode === 'Renting'){
+      return `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="value" style="font-size:14px;">${esc(p.name)}</div><div class="label">${esc(p.location||'Location not set')} · Renting</div></div>
+        <button class="btn btn-sm btn-ghost" onclick="moveOutRental(${i})">Move Out</button>
+      </div>`;
+    }
+    const cur = currentAssetValue(p.value, p.acquired, 'property');
+    const financed = p.mode.includes('financed');
+    return `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="value" style="font-size:14px;">${esc(p.name)}</div><div class="label">${esc(p.location||'Location not set')} · ${esc(p.mode)} · bought ${fmtDate(p.acquired)} for ${fmtMoney(p.value)}</div></div>
+      <div style="text-align:right;">
+        <span class="pill pill-good">${fmtMoney(cur)} now</span><br>
+        <button class="btn btn-sm btn-ghost" style="margin-top:6px;" onclick="sellProperty(${i})">Sell${financed?' (payoff first)':''}</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state">No properties yet.</div>';
 }
 
 function renderMortgageOptions(){
@@ -215,7 +231,7 @@ function renderMortgageOptions(){
     `<div class="stat" style="margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;">
         <strong>${esc(m.property)}</strong>
-        <span class="pill ${m.status==='Approved'?'pill-good':'pill-bad'}">${m.status}</span>
+        <span class="pill ${m.status==='Approved'||m.status==='Paid Off'?'pill-good':'pill-bad'}">${m.status}</span>
       </div>
       <div class="label" style="margin-top:6px;">${esc(m.reason||'')}</div>
       ${m.status==='Approved' ? `<div class="label" style="margin-top:4px;">Balance: ${fmtMoneyFull(m.balance)} · Monthly: ${fmtMoneyFull(m.monthly)}</div>
@@ -661,10 +677,17 @@ function renderLuxury(){
   const items = player.luxuryItems || [];
   const experiences = player.experienceLog || [];
   document.getElementById('luxuryList').innerHTML =
-    items.map(x=>`<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-      <div><strong>${esc(x.name)}</strong><div class="label" style="margin-top:4px;">${esc(x.category)} · acquired ${fmtDate(x.acquired)}</div></div>
-      <span class="pill pill-gold">${fmtMoney(x.value)}</span>
-    </div>`).join('') +
+    items.map((x,i)=>{
+      const cur = currentAssetValue(x.value, x.acquired, 'luxury', x.category);
+      const down = cur < x.value;
+      return `<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <div><strong>${esc(x.name)}</strong><div class="label" style="margin-top:4px;">${esc(x.category)} · bought ${fmtDate(x.acquired)} for ${fmtMoney(x.value)}</div></div>
+        <div style="text-align:right;">
+          <span class="pill ${down?'pill-bad':'pill-good'}">${fmtMoney(cur)} now</span><br>
+          <button class="btn btn-sm btn-ghost" style="margin-top:6px;" onclick="sellLuxury(${i})">Sell</button>
+        </div>
+      </div>`;
+    }).join('') +
     experiences.slice().reverse().slice(0,5).map(x=>`<div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
       <div><strong>${esc(x.name)}</strong><div class="label" style="margin-top:4px;">${esc(x.category)} · ${fmtDate(x.date)}</div></div>
       <span class="pill">${fmtMoney(x.cost)} spent</span>
@@ -691,6 +714,19 @@ async function buyLuxury(){
   renderBanking(); renderStats(); renderLuxury(); renderReputation();
   webhookPurchase(player.name, item.name, item.category.toLowerCase(), item.price);
   await maybeNetWorthShakeup();
+}
+
+async function sellLuxury(i){
+  if (!checkCooldown('spending', 3000)) return;
+  const x = player.luxuryItems[i];
+  if (!x) return;
+  const cur = currentAssetValue(x.value, x.acquired, 'luxury', x.category);
+  player.bank.checking += cur;
+  player.luxuryItems.splice(i,1);
+  await save();
+  renderBanking(); renderStats(); renderLuxury();
+  toast(`Sold ${x.name} for ${fmtMoney(cur)}.`);
+  webhookSale(player.name, x.name, x.category.toLowerCase(), cur, cur >= x.value);
 }
 
 /* ---------------- Random Expenses & Scandals ---------------- */
@@ -877,6 +913,19 @@ async function buyCar(){
   await maybeNetWorthShakeup();
 }
 
+async function sellCar(i){
+  if (!checkCooldown('spending', 3000)) return;
+  const c = player.cars[i];
+  if (!c) return;
+  const cur = currentAssetValue(c.value, c.acquired, 'car');
+  player.bank.checking += cur;
+  player.cars.splice(i,1);
+  await save();
+  renderBanking(); renderStats(); renderCars();
+  toast(`Sold ${c.name} for ${fmtMoney(cur)}.`);
+  webhookSale(player.name, c.name, 'car', cur, cur >= c.value);
+}
+
 async function buyPropertyCash(){
   if (blockIfCrisis()) return;
   if (!checkCooldown('spending', 3000)) return;
@@ -963,6 +1012,37 @@ async function payMortgage(propName){
   await save();
   renderBanking(); renderStats(); renderMortgageOptions();
   toast(`Paid ${fmtMoney(pay)} toward ${propName}.`);
+}
+
+async function sellProperty(i){
+  if (!checkCooldown('spending', 3000)) return;
+  const p = player.properties[i];
+  if (!p || p.mode === 'Renting') return;
+  const cur = currentAssetValue(p.value, p.acquired, 'property');
+
+  const mortgage = (player.mortgages||[]).find(m=>m.property===p.name && m.status==='Approved' && m.balance>0);
+  const payoff = mortgage ? mortgage.balance : 0;
+  const netProceeds = cur - payoff;
+
+  if (netProceeds < 0 && player.bank.checking < Math.abs(netProceeds)){
+    return toast(`Selling now leaves you ${fmtMoney(Math.abs(netProceeds))} short to pay off the mortgage — you don't have enough in checking to cover it.`, true);
+  }
+
+  player.bank.checking += netProceeds;
+  player.properties.splice(i,1);
+  if (mortgage){ mortgage.status = 'Paid Off'; mortgage.balance = 0; }
+  await save();
+  renderBanking(); renderStats(); renderProperties(); renderMortgageOptions();
+  toast(payoff
+    ? `Sold ${p.name} for ${fmtMoney(cur)}, paid off ${fmtMoney(payoff)} in mortgage — net ${fmtMoney(netProceeds)}.`
+    : `Sold ${p.name} for ${fmtMoney(cur)}.`);
+  webhookSale(player.name, p.name, 'property', cur, cur >= p.value);
+}
+
+async function moveOutRental(i){
+  player.properties.splice(i,1);
+  await save();
+  renderProperties();
 }
 
 async function makeInvestment(){

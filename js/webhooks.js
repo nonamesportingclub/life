@@ -206,3 +206,12 @@ function webhookClubCreated(founderName, clubName, category){
     color: GOLD
   });
 }
+function webhookSale(playerName, itemName, category, amount, gained){
+  return sendWebhook({
+    title: "💵 Asset Sold",
+    description: gained
+      ? `**${playerName}** has sold **${itemName}** for a ${magnitudeWord(amount)} profit.`
+      : `**${playerName}** has sold **${itemName}**, described as a ${magnitudeWord(amount)} sale.`,
+    color: gained ? 0x4E9A6A : GOLD
+  });
+}

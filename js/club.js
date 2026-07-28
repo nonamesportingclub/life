@@ -102,12 +102,34 @@ function monthsUntil(dateObj){
   const now = new Date();
   return (dateObj - now) / (1000*60*60*24*30.44);
 }
+/* ---------- Asset valuation over time (depreciation / appreciation) ---------- */
+const LUXURY_ANNUAL_RATES = {
+  'Jewelry & Watches': -0.04,
+  'Art & Collectibles': 0.05,
+  'Yachts': -0.12,
+  'Private Jets': -0.10,
+};
+function annualRateFor(kind, category){
+  if (kind === 'car') return -0.15;          // cars depreciate ~15%/yr
+  if (kind === 'property') return 0.05;       // property appreciates ~5%/yr
+  if (kind === 'luxury') return LUXURY_ANNUAL_RATES[category] ?? 0;
+  return 0;
+}
+function currentAssetValue(originalValue, acquiredDate, kind, category){
+  if (!acquiredDate || !originalValue) return originalValue || 0;
+  const rate = annualRateFor(kind, category);
+  const years = (Date.now() - acquiredDate) / (1000*60*60*24*365.25);
+  let value = originalValue * Math.pow(1 + rate, years);
+  if (rate < 0) value = Math.max(value, originalValue * 0.10); // never depreciates below 10% of original
+  return Math.round(value);
+}
+
 function netWorth(p){
   const bank = (p.bank?.checking||0) + (p.bank?.savings||0);
   const invest = (p.investments||[]).reduce((s,i)=> s + (i.principal||0) * (1 + (i.performancePct||0)/100), 0);
-  const props = (p.properties||[]).reduce((s,x)=> s + (x.value||0), 0);
-  const cars = (p.cars||[]).reduce((s,x)=> s + (x.value||0), 0);
-  const luxury = (p.luxuryItems||[]).reduce((s,x)=> s + (x.value||0), 0);
+  const props = (p.properties||[]).filter(x=>x.mode!=='Renting').reduce((s,x)=> s + currentAssetValue(x.value, x.acquired, 'property'), 0);
+  const cars = (p.cars||[]).reduce((s,x)=> s + currentAssetValue(x.value, x.acquired, 'car'), 0);
+  const luxury = (p.luxuryItems||[]).reduce((s,x)=> s + currentAssetValue(x.value, x.acquired, 'luxury', x.category), 0);
   const debt = (p.mortgages||[]).filter(m=>m.status==='Approved').reduce((s,m)=> s + (m.balance||0), 0);
   return Math.round(bank + invest + props + cars + luxury - debt);
 }
