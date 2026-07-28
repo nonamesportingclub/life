@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Clubs — No Name Sporting Club</title>
+<script>
+(function(){
+  fetch(window.location.pathname, { method: 'HEAD', cache: 'no-store' })
+    .then(res => {
+      const lastModified = res.headers.get('Last-Modified');
+      if (!lastModified) return;
+      const stored = localStorage.getItem('nnsc_last_seen_' + window.location.pathname);
+      if (stored && stored !== lastModified){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+        window.location.reload(true);
+      } else if (!stored){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+      }
+    })
+    .catch(()=>{});
+})();
+</script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"></div>
+
+<template id="mainTemplate">
+<main class="main">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Off The Pitch</span>
+      <h1>Player Clubs</h1>
+      <div class="page-sub">Player-run groups — book clubs, basketball pickup, gaming nights, whatever the squad wants. Anyone can start one, anyone can join.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Start a Club</div>
+    <div class="field-row">
+      <div><label for="newClubName">Club Name</label><input id="newClubName" type="text" placeholder="e.g. No Name Book Club"></div>
+      <div><label for="newClubCategory">Category</label>
+        <select id="newClubCategory">
+          <option>Book Club</option><option>Basketball</option><option>Gaming</option>
+          <option>Fitness</option><option>Cooking</option><option>Music</option>
+          <option>Travel</option><option>Business / Investing</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <label for="newClubDesc">Description</label>
+    <textarea id="newClubDesc" rows="2" placeholder="What's this club about?"></textarea>
+    <button class="btn btn-solid" onclick="createClub()">Found Club</button>
+  </div>
+
+  <div class="grid grid-2" id="clubsGrid"></div>
+</main>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script src="js/webhooks.js"></script>
+<script src="js/navbar.js"></script>
+<script>
+let identity = null;
+
+async function init(){
+  identity = await resolveIdentity();
+  if (!identity){ window.location.href = 'index.html'; return; }
+  if (identity.type === 'player'){
+    const p = await getPlayer(identity.username);
+    identity.name = p?.name;
+  }
+
+  document.getElementById('shell').innerHTML =
+    renderSidebar('clubs', identity) +
+    document.getElementById('mainTemplate').innerHTML;
+
+  await renderClubs();
+}
+
+async function renderClubs(){
+  const snap = await CLUBS().orderBy('createdAt','desc').get();
+  const clubs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+
+  document.getElementById('clubsGrid').innerHTML = clubs.map(c=>{
+    const isMember = identity.type==='player' && (c.members||[]).includes(identity.username);
+    const isFounder = identity.type==='player' && c.founder === identity.username;
+    const canManage = isFounder || identity.type==='admin';
+    return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h3 style="font-size:16px;margin-bottom:2px;">${esc(c.name)}</h3>
+          <span class="pill pill-gold">${esc(c.category)}</span>
+        </div>
+        <span class="pill">${(c.members||[]).length} member${(c.members||[]).length===1?'':'s'}</span>
+      </div>
+      <p class="section-note" style="margin-top:10px;">${esc(c.description || 'No description yet.')}</p>
+      <div class="page-sub" style="font-size:11.5px;margin-bottom:10px;">Founded by <strong>${esc(c.founderName||c.founder)}</strong> · ${fmtDate(c.createdAt)}</div>
+      <div class="tag-strip" style="margin-bottom:12px;">${(c.members||[]).map(m=>`<span class="pill">${esc(m)}</span>`).join('') || '<span class="empty-state" style="padding:0;">No members yet</span>'}</div>
+      ${identity.type==='player' ? (
+        isMember
+          ? `<button class="btn btn-ghost btn-sm" onclick="leaveClub('${c.id}')">Leave Club</button>`
+          : `<button class="btn btn-solid btn-sm" onclick="joinClub('${c.id}')">Join Club</button>`
+      ) : ''}
+      ${canManage ? `<button class="btn btn-danger btn-sm" onclick="disbandClub('${c.id}')">Disband</button>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty-state">No clubs founded yet — be the first.</div>';
+}
+
+async function createClub(){
+  if (identity.type !== 'player') return toast('Only players can found a club.', true);
+  const name = document.getElementById('newClubName').value.trim();
+  const category = document.getElementById('newClubCategory').value;
+  const description = document.getElementById('newClubDesc').value.trim();
+  if (!name) return toast('Give your club a name.', true);
+
+  await CLUBS().add({
+    name, category, description,
+    founder: identity.username, founderName: identity.name || identity.username,
+    members: [identity.username],
+    createdAt: Date.now()
+  });
+  document.getElementById('newClubName').value='';
+  document.getElementById('newClubDesc').value='';
+  toast('Club founded!');
+  webhookClubCreated(identity.name || identity.username, name, category);
+  await renderClubs();
+}
+
+async function joinClub(id){
+  const ref = CLUBS().doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) return;
+  const members = doc.data().members || [];
+  if (!members.includes(identity.username)) members.push(identity.username);
+  await ref.update({ members });
+  await renderClubs();
+}
+async function leaveClub(id){
+  const ref = CLUBS().doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) return;
+  const members = (doc.data().members || []).filter(m=>m!==identity.username);
+  await ref.update({ members });
+  await renderClubs();
+}
+async function disbandClub(id){
+  if (!confirm('Disband this club? This can\'t be undone.')) return;
+  await CLUBS().doc(id).delete();
+  await renderClubs();
+}
+
+init();
+</script>
+</body>
+</html>
