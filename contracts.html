@@ -4,6 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contract List — No Name Sporting Club</title>
+  <script>
+(function(){
+  fetch(window.location.pathname, { method: 'HEAD', cache: 'no-store' })
+    .then(res => {
+      const lastModified = res.headers.get('Last-Modified');
+      if (!lastModified) return;
+      const stored = localStorage.getItem('nnsc_last_seen_' + window.location.pathname);
+      if (stored && stored !== lastModified){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+        window.location.reload(true);
+      } else if (!stored){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+      }
+    })
+    .catch(()=>{});
+})();
+</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
