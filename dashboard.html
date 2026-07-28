@@ -71,16 +71,12 @@
 
   <div class="card">
     <div class="card-title">Garage <span class="pill pill-gold" id="carsCount"></span></div>
+    <label for="carSearch">Search 300+ cars</label>
+    <input id="carSearch" type="text" placeholder="Type a make or model…" oninput="filterCarSelect()">
     <div class="field-row">
       <div>
         <label for="carTier">Choose a car</label>
-        <select id="carTier">
-          <option value="Economy Car|18000">Economy Car — ~$18K</option>
-          <option value="Sports Coupe|65000">Sports Coupe — ~$65K</option>
-          <option value="Luxury Sedan|140000">Luxury Sedan — ~$140K</option>
-          <option value="Supercar|420000">Supercar — ~$420K</option>
-          <option value="Hypercar|1800000">Hypercar — ~$1.8M</option>
-        </select>
+        <select id="carTier"></select>
       </div>
       <div style="display:flex;align-items:flex-end;">
         <button class="btn btn-solid" style="margin-bottom:14px;" onclick="buyCar()">Purchase</button>
@@ -94,13 +90,8 @@
     <div class="field-row">
       <div>
         <label for="propTier">Choose a property</label>
-        <select id="propTier">
-          <option value="Starter Apartment|1200|rent">Starter Apartment — rent, ~$1.2K/mo</option>
-          <option value="City Condo|380000|buy">City Condo — buy, ~$380K</option>
-          <option value="Luxury Condo|900000|buy">Luxury Condo — buy, ~$900K</option>
-          <option value="Suburban Mansion|2400000|buy">Suburban Mansion — buy, ~$2.4M</option>
-          <option value="Countryside Villa|5500000|buy">Countryside Villa — buy, ~$5.5M</option>
-        </select>
+        <select id="propTier" onchange="updatePropBlurb()"></select>
+        <div class="section-note" id="propBlurb" style="margin-top:-10px;"></div>
       </div>
       <div>
         <label for="propLocation">Location</label>
@@ -227,6 +218,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/club.js"></script>
+<script src="js/catalog.js"></script>
 <script src="js/session.js"></script>
 <script src="js/webhooks.js"></script>
 <script src="js/navbar.js"></script>
