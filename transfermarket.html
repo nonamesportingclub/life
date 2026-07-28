@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer Market — No Name Sporting Club</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"></div>
+
+<template id="mainTemplate">
+<main class="main">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Market Watch</span>
+      <h1>Transfer Market</h1>
+      <div class="page-sub">Live interest levels, market values, and the latest rumors around the squad.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Rumor Mill</div>
+    <div id="rumorFeed"></div>
+  </div>
+
+  <div class="grid" id="marketGrid" style="grid-template-columns:1fr;"></div>
+</main>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script src="js/navbar.js"></script>
+<script>
+async function init(){
+  let identity = await resolveIdentity();
+  if (!identity){ window.location.href = 'index.html'; return; }
+  if (identity.type === 'player'){
+    const p = await getPlayer(identity.username);
+    identity.name = p?.name;
+  }
+
+  document.getElementById('shell').innerHTML =
+    renderSidebar('transfermarket', identity) +
+    document.getElementById('mainTemplate').innerHTML;
+
+  const players = (await getAllPlayers()).filter(p=>!p.retired);
+
+  document.getElementById('marketGrid').innerHTML = players.map(p=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="ovr-badge" style="width:54px;height:54px;"><div class="n" style="font-size:18px;">${p.ovr}</div><div class="p" style="font-size:7px;">${esc(p.position)}</div></div>
+          <div>
+            <h3 style="font-size:16px;margin-bottom:2px;">${esc(p.name)}</h3>
+            <div class="page-sub" style="font-size:12px;">Age ${p.age} · ${esc(p.team)}</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="stat" style="padding:8px 14px;"><div class="label">Market Value</div><div class="value gold" style="font-size:16px;">${fmtMoney(p.marketValue)}</div></div>
+        </div>
+      </div>
+      <hr class="hairline">
+      <div class="tag-strip" style="margin-bottom:10px;">
+        <span class="pill ${p.transferStatus==='Not listed'?'':'pill-gold'}">${esc(p.transferStatus||'Not listed')}</span>
+      </div>
+      <div class="card-title" style="font-size:11px;">Declared Interest</div>
+      ${(p.interestedClubs||[]).length ? (p.interestedClubs||[]).map(c=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;">${esc(c.club)}</span>
+          <div style="flex:1;margin:0 12px;height:6px;background:var(--ink-panel-2);border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${c.percent}%;background:var(--gold);"></div>
+          </div>
+          <span class="mono" style="font-size:12px;color:var(--gold);">${c.percent}%</span>
+        </div>`).join('') : '<div class="empty-state" style="padding:14px;">No declared interest from other clubs.</div>'}
+    </div>
+  `).join('') || '<div class="empty-state">No players on the market yet.</div>';
+
+  const rumors = (await db.collection('rumors').orderBy('date','desc').limit(10).get()).docs.map(d=>d.data());
+  document.getElementById('rumorFeed').innerHTML = rumors.map(r=>
+    `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--hairline);font-size:13.5px;">
+      🚨 <strong>${esc(r.headline)}</strong>
+      <div class="page-sub" style="font-size:11.5px;margin-top:3px;">${fmtDate(r.date)}</div>
+    </div>`
+  ).join('') || '<div class="empty-state">No rumors circulating right now.</div>';
+}
+init();
+</script>
+</body>
+</html>

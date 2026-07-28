@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — No Name Sporting Club</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"></div>
+
+<template id="mainTemplate">
+<main class="main">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Front Office</span>
+      <h1>Admin Panel</h1>
+      <div class="page-sub">Create players, edit any field, post rumors, and run negotiations.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-title">Roster</div>
+      <select id="rosterSelect" onchange="loadIntoForm(this.value)"></select>
+      <button class="btn btn-sm btn-ghost" onclick="newPlayer()">+ New Player</button>
+      <button class="btn btn-sm btn-danger" onclick="removePlayer()" id="deleteBtn">Delete Selected</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Discord Webhook</div>
+      <p class="section-note">Set once in <span class="mono">js/firebase-config.js</span> (<span class="mono">DISCORD_WEBHOOK_URL</span>). Use the buttons below to test / post manually.</p>
+      <button class="btn btn-sm" onclick="webhookRumor('Test Player','A Rival Club',65)">Send Test Alert</button>
+    </div>
+  </div>
+
+  <form id="playerForm" onsubmit="submitPlayer(event)">
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Identity &amp; Login</div>
+        <div class="field-row">
+          <div><label>Username (login ID)</label><input id="f_username" required></div>
+          <div><label>Password</label><input id="f_password" required></div>
+        </div>
+        <div class="field-row">
+          <div><label>Full Name</label><input id="f_name" required></div>
+          <div><label>Position</label><input id="f_position" placeholder="e.g. LW"></div>
+        </div>
+        <div class="field-row">
+          <div><label>Age</label><input id="f_age" type="number"></div>
+          <div><label>Team</label><input id="f_team" value="No Name Sporting Club"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ratings &amp; Market</div>
+        <div class="field-row">
+          <div><label>Overall (OVR)</label><input id="f_ovr" type="number" min="1" max="99"></div>
+          <div><label>Reputation (0-100)</label><input id="f_reputation" type="number" min="0" max="100"></div>
+        </div>
+        <div class="field-row">
+          <div><label>Market Value ($)</label><input id="f_marketValue" type="number"></div>
+          <div><label>Transfer Status</label>
+            <select id="f_transferStatus">
+              <option>Not listed</option><option>Available for transfer</option><option>Loan listed</option><option>Actively shopped</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Contract (backdate freely for veteran deals)</div>
+      <div class="field-row">
+        <div><label>Contract Start Date</label><input id="f_contractStart" type="date"></div>
+        <div><label>Length (years)</label><input id="f_contractYears" type="number" min="1"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Annual Salary ($)</label><input id="f_salary" type="number"></div>
+        <div><label>Release Clause ($)</label><input id="f_releaseClause" type="number"></div>
+      </div>
+      <label>Bonus / Clause Notes</label>
+      <textarea id="f_bonuses" rows="2" placeholder="e.g. +$500K appearance bonus after 20 matches"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Declared Interest (Transfer Market)</div>
+      <div id="interestRows"></div>
+      <button type="button" class="btn btn-sm btn-ghost" onclick="addInterestRow()">+ Add Club</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Career History</div>
+      <div id="careerRows"></div>
+      <button type="button" class="btn btn-sm btn-ghost" onclick="addCareerRow()">+ Add Entry</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sponsorships</div>
+      <div id="sponsorRows"></div>
+      <button type="button" class="btn btn-sm btn-ghost" onclick="addSponsorRow()">+ Add Sponsorship</button>
+    </div>
+
+    <button class="btn btn-solid" type="submit">Save Player</button>
+  </form>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-title">Agent Negotiation</div>
+      <p class="section-note">Log a renewal offer and its outcome. Updates the contract on save.</p>
+      <label>Proposed Salary ($)</label><input id="negSalary" type="number">
+      <label>Proposed Years</label><input id="negYears" type="number">
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn btn-sm btn-solid" onclick="negotiate('Accepted')">Player Accepts</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="negotiate('Rejected')">Player Rejects</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Post Transfer Rumor</div>
+      <label>Interested Club</label><input id="rumorClub" placeholder="e.g. Real Madrid Roblox">
+      <label>Interest Level (%)</label><input id="rumorPct" type="number" min="1" max="100">
+      <button type="button" class="btn btn-sm btn-solid" onclick="postRumor()">Post Rumor + Webhook</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">PR Incident Log</div>
+    <div class="field-row">
+      <div><label>Headline</label><input id="prHeadline" placeholder="e.g. spoke at a youth coaching clinic"></div>
+      <div><label>Type</label>
+        <select id="prType"><option value="positive">Positive</option><option value="negative">Negative</option></select>
+      </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-solid" onclick="postPR()">Log Incident + Webhook</button>
+  </div>
+
+</main>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script src="js/webhooks.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

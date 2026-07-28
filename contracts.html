@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contract List — No Name Sporting Club</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"></div>
+
+<template id="mainTemplate">
+<main class="main">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Ledger</span>
+      <h1>Contract List</h1>
+      <div class="page-sub">Every player on the books. Click a column to sort.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table id="contractTable">
+        <thead>
+          <tr>
+            <th data-key="name">Player</th>
+            <th data-key="ovr">OVR</th>
+            <th data-key="salary">Salary</th>
+            <th data-key="salaryPerOvr">$/OVR</th>
+            <th data-key="years">Length</th>
+            <th data-key="tenure">Time at Club</th>
+            <th data-key="end">Expires</th>
+            <th data-key="value">Value</th>
+          </tr>
+        </thead>
+        <tbody id="contractBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script src="js/navbar.js"></script>
+<script>
+let rows = [];
+let sortKey = 'salary';
+let sortDir = -1;
+
+async function init(){
+  let identity = await resolveIdentity();
+  if (!identity){ window.location.href = 'index.html'; return; }
+  if (identity.type === 'player'){
+    const p = await getPlayer(identity.username);
+    identity.name = p?.name;
+  }
+
+  document.getElementById('shell').innerHTML =
+    renderSidebar('contracts', identity) +
+    document.getElementById('mainTemplate').innerHTML;
+
+  const players = (await getAllPlayers()).filter(p=>!p.retired);
+  rows = players.map(p=>({
+    name: p.name, ovr: p.ovr||0, salary: p.salary||0,
+    salaryPerOvr: p.ovr ? Math.round((p.salary||0)/p.ovr) : 0,
+    years: p.contract?.years||0,
+    tenureYears: yearsAt(p.contract?.start),
+    end: contractEndDate(p),
+    veteran: isVeteranDeal(p.contract?.start),
+    value: valueRating(p)
+  }));
+
+  document.querySelectorAll('#contractTable th').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.key;
+      if (sortKey===key) sortDir *= -1; else { sortKey=key; sortDir=-1; }
+      render();
+    });
+  });
+  render();
+}
+
+function render(){
+  const sorted = [...rows].sort((a,b)=>{
+    let av = a[sortKey==='tenure'?'tenureYears':sortKey==='end'?'end':sortKey];
+    let bv = b[sortKey==='tenure'?'tenureYears':sortKey==='end'?'end':sortKey];
+    if (sortKey==='end'){ av = av?av.getTime():0; bv = bv?bv.getTime():0; }
+    if (typeof av === 'string') return av.localeCompare(bv) * sortDir;
+    return ((av||0)-(bv||0)) * sortDir;
+  });
+
+  document.getElementById('contractBody').innerHTML = sorted.map(r=>`
+    <tr>
+      <td><strong>${esc(r.name)}</strong> ${r.veteran?'<span class="pill pill-gold" style="margin-left:6px;">Veteran Deal</span>':''}</td>
+      <td class="mono">${r.ovr}</td>
+      <td class="mono">${fmtMoney(r.salary)}</td>
+      <td class="mono">${fmtMoney(r.salaryPerOvr)}</td>
+      <td class="mono">${r.years}y</td>
+      <td class="mono">${r.tenureYears.toFixed(1)}y</td>
+      <td class="mono">${r.end ? fmtDate(r.end) : '—'}</td>
+      <td><span class="pill ${r.value==='Overpaid'?'pill-bad':r.value==='Bargain'?'pill-good':''}">${r.value}</span></td>
+    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;">No contracts on file.</td></tr>';
+}
+init();
+</script>
+</body>
+</html>

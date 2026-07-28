@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboards — No Name Sporting Club</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"></div>
+
+<template id="mainTemplate">
+<main class="main">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Bragging Rights</span>
+      <h1>Leaderboards</h1>
+      <div class="page-sub">Exact figures stay in-club — Discord only sees rank movement.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" id="boardGrid"></div>
+</main>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script src="js/navbar.js"></script>
+<script>
+function board(title, list, valueFn){
+  return `<div class="card">
+    <div class="card-title">${title}</div>
+    ${list.length ? list.slice(0,8).map((p,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--hairline);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="mono" style="color:var(--gold);width:20px;">${i+1}</span>
+          <span>${esc(p.name)}</span>
+        </div>
+        <span class="mono" style="color:var(--gold);">${valueFn(p)}</span>
+      </div>`).join('') : '<div class="empty-state">Not enough data yet.</div>'}
+  </div>`;
+}
+
+async function init(){
+  let identity = await resolveIdentity();
+  if (!identity){ window.location.href = 'index.html'; return; }
+  if (identity.type === 'player'){
+    const p = await getPlayer(identity.username);
+    identity.name = p?.name;
+  }
+
+  document.getElementById('shell').innerHTML =
+    renderSidebar('leaderboard', identity) +
+    document.getElementById('mainTemplate').innerHTML;
+
+  const players = (await getAllPlayers()).filter(p=>!p.retired);
+
+  const byNetWorth = [...players].sort((a,b)=>netWorth(b)-netWorth(a));
+  const byEarner = [...players].sort((a,b)=>(b.salary||0)-(a.salary||0));
+  const bySponsorships = [...players].sort((a,b)=>(b.sponsorships?.length||0)-(a.sponsorships?.length||0));
+  const byCharity = [...players].sort((a,b)=>{
+    const ca = (a.charityLog||[]).reduce((s,c)=>s+c.amount,0);
+    const cb = (b.charityLog||[]).reduce((s,c)=>s+c.amount,0);
+    return cb-ca;
+  });
+  const byROI = [...players].map(p=>({...p, roi: (p.investments||[]).reduce((s,i)=>s+i.performancePct,0)/((p.investments||[]).length||1)}))
+    .sort((a,b)=>b.roi-a.roi);
+  const byRep = [...players].sort((a,b)=>(b.reputation||0)-(a.reputation||0));
+
+  document.getElementById('boardGrid').innerHTML =
+    board('Richest — Net Worth', byNetWorth, p=>fmtMoney(netWorth(p))) +
+    board('Highest Earners — Salary', byEarner, p=>fmtMoney(p.salary)) +
+    board('Best Investors — Avg. ROI', byROI, p=>`${p.roi.toFixed(1)}%`) +
+    board('Most Sponsorships', bySponsorships, p=>`${p.sponsorships?.length||0} deals`) +
+    board('Most Charitable', byCharity, p=>fmtMoney((p.charityLog||[]).reduce((s,c)=>s+c.amount,0))) +
+    board('Fan Approval', byRep, p=>`${p.reputation}/100`);
+}
+init();
+</script>
+</body>
+</html>

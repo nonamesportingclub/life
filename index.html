@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Name Sporting Club — Club Portal</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-screen">
+  <div class="login-box">
+    <div class="login-crest">
+      <div class="crest-mark">NN</div>
+      <h1>No Name Sporting Club</h1>
+      <div class="tag">Club Portal &amp; Ledger</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tabPlayer" onclick="switchTab('player')">Player</div>
+      <div class="tab" id="tabAdmin" onclick="switchTab('admin')">Admin</div>
+    </div>
+
+    <!-- PLAYER LOGIN -->
+    <form id="playerForm" onsubmit="playerLogin(event)">
+      <label for="pUser">Username</label>
+      <input id="pUser" type="text" autocomplete="username" required>
+      <label for="pPass">Password</label>
+      <input id="pPass" type="password" autocomplete="current-password" required>
+      <div class="error-msg" id="pErr" style="display:none;"></div>
+      <button class="btn btn-solid" style="width:100%;justify-content:center;" type="submit">Enter Portal</button>
+    </form>
+
+    <!-- ADMIN LOGIN -->
+    <form id="adminForm" onsubmit="adminLogin(event)" style="display:none;">
+      <label for="aEmail">Admin email</label>
+      <input id="aEmail" type="email" autocomplete="username" required>
+      <label for="aPass">Password</label>
+      <input id="aPass" type="password" autocomplete="current-password" required>
+      <div class="error-msg" id="aErr" style="display:none;"></div>
+      <button class="btn btn-solid" style="width:100%;justify-content:center;" type="submit">Enter Admin Panel</button>
+    </form>
+
+    <p class="hint">Players: use the username &amp; password your admin gave you.<br>Admin: sign in with the Firebase account set up during install.</p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/session.js"></script>
+<script>
+function switchTab(which){
+  const isPlayer = which === 'player';
+  document.getElementById('tabPlayer').classList.toggle('active', isPlayer);
+  document.getElementById('tabAdmin').classList.toggle('active', !isPlayer);
+  document.getElementById('playerForm').style.display = isPlayer ? 'block' : 'none';
+  document.getElementById('adminForm').style.display = isPlayer ? 'none' : 'block';
+}
+
+async function playerLogin(e){
+  e.preventDefault();
+  const errEl = document.getElementById('pErr');
+  errEl.style.display = 'none';
+  const username = document.getElementById('pUser').value.trim();
+  const password = document.getElementById('pPass').value;
+  try{
+    const player = await getPlayer(username);
+    if (!player || player.password !== password){
+      errEl.textContent = "That username and password don't match a player on file.";
+      errEl.style.display = 'block';
+      return;
+    }
+    setPlayerSession(username);
+    window.location.href = player.lifeChoice ? 'dashboard.html' : 'dashboard.html?onboard=1';
+  }catch(err){
+    errEl.textContent = "Couldn't reach the club database. Check your Firebase setup.";
+    errEl.style.display = 'block';
+  }
+}
+
+async function adminLogin(e){
+  e.preventDefault();
+  const errEl = document.getElementById('aErr');
+  errEl.style.display = 'none';
+  const email = document.getElementById('aEmail').value.trim();
+  const password = document.getElementById('aPass').value;
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+    window.location.href = 'admin.html';
+  }catch(err){
+    errEl.textContent = "Sign-in failed — check the admin email and password.";
+    errEl.style.display = 'block';
+  }
+}
+
+// If an admin session is already active, skip straight through
+auth.onAuthStateChanged(user=>{
+  if (user && window.location.search.indexOf('stay')===-1){
+    // leave them on login only if they navigated here on purpose; otherwise
+    // this keeps admin.html's own guard as the source of truth.
+  }
+});
+</script>
+</body>
+</html>
