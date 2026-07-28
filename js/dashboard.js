@@ -416,11 +416,20 @@ async function recordGamble(game, bet, won, payout){
   if (netAmount >= 250000) webhookGamble(player.name, game, won, netAmount);
 }
 
+const CASINO_COOLDOWN_MS = 4000;
+let lastGambleTime = 0;
+
 function takeBet(inputId){
   if (blockIfCrisis()) return null;
+  const sinceLast = Date.now() - lastGambleTime;
+  if (sinceLast < CASINO_COOLDOWN_MS){
+    toast(`Table's still settling up — wait ${Math.ceil((CASINO_COOLDOWN_MS-sinceLast)/1000)}s.`, true);
+    return null;
+  }
   const bet = Number(document.getElementById(inputId).value);
   if (!bet || bet <= 0){ toast('Enter a valid bet.', true); return null; }
   if (bet > player.bank.checking){ toast('Not enough in checking.', true); return null; }
+  lastGambleTime = Date.now();
   return bet;
 }
 

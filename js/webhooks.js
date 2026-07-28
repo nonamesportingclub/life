@@ -22,20 +22,32 @@ function trendWord(pct){
   return "in free fall";
 }
 
+const WEBHOOK_MIN_INTERVAL_MS = 1500;
+let _webhookQueue = Promise.resolve();
+let _lastWebhookSend = 0;
+
 async function sendWebhook(embed){
   if (!DISCORD_WEBHOOK_URL){
     console.warn('Discord webhook URL not set — skipping send.', embed);
     return;
   }
-  try{
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ embeds: [embed] })
-    });
-  }catch(e){
-    console.error('Webhook failed', e);
-  }
+  // Chained onto a queue so sends are always spaced at least WEBHOOK_MIN_INTERVAL_MS
+  // apart, no matter how many calls fire back-to-back from the app.
+  _webhookQueue = _webhookQueue.then(async () => {
+    const wait = _lastWebhookSend + WEBHOOK_MIN_INTERVAL_MS - Date.now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    _lastWebhookSend = Date.now();
+    try{
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] })
+      });
+    }catch(e){
+      console.error('Webhook failed', e);
+    }
+  });
+  return _webhookQueue;
 }
 
 const GOLD = 0xC6A15B;
