@@ -5,6 +5,8 @@
 const PAYDAY_COOLDOWN_DAYS = 3;   // real-world days between salary collections
 const MORTGAGE_SALARY_MULT = 4;   // max loan = salary * this, minus existing debt
 const DOWN_PAYMENT_PCT = 0.20;
+const DECLARE_WINDOW_DAYS = 3;    // rolling window for self-declared transfer interest
+const DECLARE_MAX = 2;            // max declarations allowed within that window
 
 let player = null;
 
@@ -90,6 +92,8 @@ function renderAll(){
   renderVentures();
   renderSponsorships();
   renderReputation();
+  renderDeclaredInterest();
+  renderCasino();
   renderCareer();
   renderRetirement();
 }
@@ -240,6 +244,154 @@ function renderReputation(){
   ).join('') || 'No club news yet.';
 }
 
+function recentDeclarations(){
+  const cutoff = Date.now() - DECLARE_WINDOW_DAYS*86400000;
+  return (player.declaredInterest||[]).filter(d=>d.date >= cutoff);
+}
+
+function renderDeclaredInterest(){
+  const recent = recentDeclarations();
+  const remaining = Math.max(0, DECLARE_MAX - recent.length);
+  const badge = document.getElementById('declareRemaining');
+  const btn = document.getElementById('declareBtn');
+  if (remaining > 0){
+    badge.textContent = `${remaining} of ${DECLARE_MAX} left this window`;
+    btn.disabled = false;
+    btn.textContent = 'Declare Interest';
+  } else {
+    const oldest = recent.reduce((a,b)=> a.date<b.date?a:b);
+    const freeAt = new Date(oldest.date + DECLARE_WINDOW_DAYS*86400000);
+    const days = Math.max(0, (freeAt - Date.now())/86400000);
+    badge.textContent = `0 left — resets in ${days.toFixed(1)}d`;
+    btn.disabled = true;
+    btn.textContent = 'Limit reached';
+  }
+
+  const all = (player.declaredInterest||[]).slice().sort((a,b)=>b.date-a.date);
+  document.getElementById('declareList').innerHTML = all.map((d,i)=>`
+    <div class="stat" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <div><strong>${esc(d.club)}</strong><div class="label" style="margin-top:4px;">${fmtDate(d.date)}</div></div>
+      <button class="btn btn-sm btn-ghost" onclick="withdrawDeclaration(${(player.declaredInterest||[]).indexOf(d)})">Withdraw</button>
+    </div>`).join('') || '<div class="empty-state">No public declarations yet.</div>';
+}
+
+async function declareInterest(){
+  const club = document.getElementById('declareClub').value.trim();
+  if (!club) return toast('Enter a club name.', true);
+  if (recentDeclarations().length >= DECLARE_MAX) return toast(`You can only declare interest in ${DECLARE_MAX} clubs per ${DECLARE_WINDOW_DAYS} days.`, true);
+
+  player.declaredInterest = player.declaredInterest || [];
+  player.declaredInterest.push({ club, date: Date.now() });
+  await save();
+  renderDeclaredInterest();
+  document.getElementById('declareClub').value = '';
+  webhookDeclareInterest(player.name, club);
+}
+
+async function withdrawDeclaration(i){
+  player.declaredInterest.splice(i,1);
+  await save();
+  renderDeclaredInterest();
+}
+
+/* ---------------- Casino ---------------- */
+
+function renderCasino(){
+  const g = player.gambling || { wagered:0, won:0, lost:0, biggestWin:0, log:[] };
+  document.getElementById('gWagered').textContent = fmtMoneyFull(g.wagered);
+  document.getElementById('gBiggest').textContent = fmtMoneyFull(g.biggestWin);
+  const net = g.won - g.lost;
+  document.getElementById('casinoNet').textContent = `Net: ${net>=0?'+':''}${fmtMoney(net)}`;
+  document.getElementById('gambleLog').innerHTML = (g.log||[]).slice().reverse().slice(0,8).map(l=>
+    `<div style="margin-bottom:5px;">${l.result==='win'?'🟢':'🔴'} <strong>${esc(l.game)}</strong> — bet ${fmtMoney(l.bet)}, ${l.result==='win'?'won':'lost'} ${fmtMoney(l.amount)}</div>`
+  ).join('') || 'No hands played yet.';
+}
+
+async function recordGamble(game, bet, won, payout){
+  player.gambling = player.gambling || { wagered:0, won:0, lost:0, biggestWin:0, log:[] };
+  const g = player.gambling;
+  g.wagered += bet;
+  const netAmount = won ? (payout - bet) : bet;
+  if (won){ g.won += netAmount; g.biggestWin = Math.max(g.biggestWin, netAmount); }
+  else { g.lost += bet; }
+  g.log = g.log || [];
+  g.log.push({ game, bet, result: won?'win':'lose', amount: netAmount, date: Date.now() });
+  player.bank.checking += won ? (payout - bet) : -bet;
+  await save();
+  renderBanking(); renderStats(); renderCasino();
+  if (netAmount >= 250000) webhookGamble(player.name, game, won, netAmount);
+}
+
+function takeBet(inputId){
+  const bet = Number(document.getElementById(inputId).value);
+  if (!bet || bet <= 0){ toast('Enter a valid bet.', true); return null; }
+  if (bet > player.bank.checking){ toast('Not enough in checking.', true); return null; }
+  return bet;
+}
+
+async function playCoinFlip(){
+  const bet = takeBet('coinBet'); if (!bet) return;
+  const call = document.getElementById('coinSide').value;
+  const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+  const won = result === call;
+  toast(`${result}! You ${won?'won':'lost'}.`, !won);
+  await recordGamble('Coin Flip', bet, won, bet*1.9);
+}
+
+async function playDiceDuel(){
+  const bet = takeBet('diceBet'); if (!bet) return;
+  const player_roll = 1 + Math.floor(Math.random()*6);
+  const house_roll = 1 + Math.floor(Math.random()*6);
+  if (player_roll === house_roll){
+    toast(`Push — both rolled ${player_roll}. Bet returned.`);
+    return; // no change
+  }
+  const won = player_roll > house_roll;
+  toast(`You rolled ${player_roll}, house rolled ${house_roll}. You ${won?'won':'lost'}.`, !won);
+  await recordGamble('Dice Duel', bet, won, bet*1.9);
+}
+
+const SLOT_SYMBOLS = [
+  { s:'🍒', w:40, mult:3 },
+  { s:'🍋', w:28, mult:4 },
+  { s:'🔔', w:16, mult:8 },
+  { s:'⭐', w:10, mult:12 },
+  { s:'💎', w:6,  mult:20 },
+];
+function weightedSymbol(){
+  const total = SLOT_SYMBOLS.reduce((s,x)=>s+x.w,0);
+  let r = Math.random()*total;
+  for (const sym of SLOT_SYMBOLS){ if (r < sym.w) return sym; r -= sym.w; }
+  return SLOT_SYMBOLS[0];
+}
+async function playSlots(){
+  const bet = takeBet('slotsBet'); if (!bet) return;
+  const reels = [weightedSymbol(), weightedSymbol(), weightedSymbol()];
+  document.getElementById('slotsReel').textContent = reels.map(r=>r.s).join(' ');
+  let won = false, payout = 0;
+  if (reels[0].s === reels[1].s && reels[1].s === reels[2].s){
+    won = true; payout = bet * reels[0].mult;
+    toast(`JACKPOT! Triple ${reels[0].s} — ${reels[0].mult}x!`);
+  } else if (reels[0].s === reels[1].s || reels[1].s === reels[2].s || reels[0].s === reels[2].s){
+    won = true; payout = bet * 1.5;
+    toast('Two of a kind — small win.');
+  } else {
+    toast('No match. House wins.', true);
+  }
+  await recordGamble('Slots', bet, won, payout);
+}
+
+async function playRoulette(){
+  const bet = takeBet('rouletteBet'); if (!bet) return;
+  const color = document.getElementById('rouletteColor').value;
+  const roll = Math.floor(Math.random()*37); // 0-36, 0 = green
+  const resultColor = roll === 0 ? 'Green' : (roll % 2 === 0 ? 'Black' : 'Red');
+  const won = resultColor === color;
+  const payout = color === 'Green' ? bet*35 : bet*2;
+  toast(`Ball landed on ${roll} (${resultColor}). You ${won?'won':'lost'}.`, !won);
+  await recordGamble('Roulette', bet, won, payout);
+}
+
 function renderCareer(){
   const hist = (player.careerHistory||[]).slice().sort((a,b)=> (a.year||0)-(b.year||0));
   document.getElementById('careerTimeline').innerHTML = hist.map(h=>
@@ -254,7 +406,15 @@ function renderRetirement(){
 
 /* ---------------- Actions ---------------- */
 
-async function save(){ await savePlayer(player); }
+async function save(){
+  try{
+    await savePlayer(player);
+  }catch(e){
+    console.error('Save failed', e);
+    toast("Couldn't save — check your Firestore rules are published correctly.", true);
+    throw e;
+  }
+}
 
 async function chooseLife(choice){
   player.lifeChoice = choice;
