@@ -956,12 +956,12 @@ async function cashOutInvestment(i){
   await maybeNetWorthShakeup();
 }
 
-const MARKET_SIM_COOLDOWN_HOURS = 6;
+const MARKET_SIM_COOLDOWN_MS = 30 * 1000;
 async function simulateMarket(){
   const last = player.lastMarketSim ? new Date(player.lastMarketSim) : null;
-  if (last && (Date.now()-last) < MARKET_SIM_COOLDOWN_HOURS*3600000){
-    const hrs = Math.ceil(MARKET_SIM_COOLDOWN_HOURS - (Date.now()-last)/3600000);
-    return toast(`Markets already moved this week — check back in ${hrs}h.`, true);
+  if (last && (Date.now()-last) < MARKET_SIM_COOLDOWN_MS){
+    const secs = Math.ceil((MARKET_SIM_COOLDOWN_MS - (Date.now()-last))/1000);
+    return toast(`Markets already moved recently — check back in ${secs}s.`, true);
   }
   player.lastMarketSim = Date.now();
 
