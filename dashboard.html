@@ -87,6 +87,19 @@
   </div>
 
   <div class="card">
+    <div class="card-title">Send Money <span class="pill pill-gold" id="transferLimitBadge"></span></div>
+    <p class="section-note">Send to any other player on the roster. Amounts over $50K per gift are taxed 20% — you pay the tax, they receive the full amount, same as a real gift tax. Capped at $5M sent per rolling 24 hours.</p>
+    <div class="field-row">
+      <div><label for="transferRecipient">Send to</label><select id="transferRecipient"></select></div>
+      <div><label for="transferSendAmt">Amount</label><input id="transferSendAmt" type="number" min="1" placeholder="Amount" oninput="updateTransferPreview()"></div>
+    </div>
+    <div id="transferPreview" class="section-note" style="margin-top:-8px;"></div>
+    <button class="btn btn-solid" onclick="sendMoneyToPlayer()">Send</button>
+    <hr class="hairline">
+    <div id="transferLog" style="margin-top:12px;font-size:12.5px;color:var(--muted);"></div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Garage <span class="pill pill-gold" id="carsCount"></span></div>
     <label for="carSearch">Search 300+ cars</label>
     <input id="carSearch" type="text" placeholder="Type a make or model…" oninput="filterCarSelect()">
