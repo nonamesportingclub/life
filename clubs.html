@@ -113,12 +113,16 @@ async function renderClubs(){
   }).join('') || '<div class="empty-state">No clubs founded yet — be the first.</div>';
 }
 
+let lastClubCreate = 0;
 async function createClub(){
   if (identity.type !== 'player') return toast('Only players can found a club.', true);
+  const remaining = 30000 - (Date.now() - lastClubCreate);
+  if (remaining > 0) return toast(`Give it a moment — try again in ${Math.ceil(remaining/1000)}s.`, true);
   const name = document.getElementById('newClubName').value.trim();
   const category = document.getElementById('newClubCategory').value;
   const description = document.getElementById('newClubDesc').value.trim();
   if (!name) return toast('Give your club a name.', true);
+  lastClubCreate = Date.now();
 
   await CLUBS().add({
     name, category, description,
