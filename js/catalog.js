@@ -2402,3 +2402,1463 @@ const LUXURY_CATALOG = [
     "asset": false
   }
 ];
+
+/* ---------- Sponsor brands — tier-gated by OVR and reputation, fictional (avoids real trademarks) ---------- */
+const SPONSOR_CATALOG = [
+  {
+    "name": "Clearsignal Mobile",
+    "tier": "Elite",
+    "industry": "Telecom",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Cascade Auto Group",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Velocity Wear",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Aeroline Global",
+    "tier": "Elite",
+    "industry": "Airlines / Travel",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Ridgetone Telecom",
+    "tier": "Elite",
+    "industry": "Telecom",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Highline Athletics",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Summit Capital Partners",
+    "tier": "Elite",
+    "industry": "Finance / Banking",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Forge Sport",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Silhouette House",
+    "tier": "Elite",
+    "industry": "Fashion",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Vividcore Technologies",
+    "tier": "Elite",
+    "industry": "Technology",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Northline Sports",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Hearthstone Living",
+    "tier": "Elite",
+    "industry": "Home / Lifestyle",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Vantage Auto",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Connectra",
+    "tier": "Elite",
+    "industry": "Telecom",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Openwave Communications",
+    "tier": "Elite",
+    "industry": "Telecom",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Trueform Athletics",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Bluecrest Airways",
+    "tier": "Elite",
+    "industry": "Airlines / Travel",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Continental Drive Co.",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Rivalstream",
+    "tier": "Elite",
+    "industry": "Gaming / Esports",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Beacon Automotive",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Pulse Athletics",
+    "tier": "Elite",
+    "industry": "Sportswear",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Vertex Systems",
+    "tier": "Elite",
+    "industry": "Technology",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Currentwave Drinks",
+    "tier": "Elite",
+    "industry": "Beverage",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Anchorpoint Bank",
+    "tier": "Elite",
+    "industry": "Finance / Banking",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Driftware",
+    "tier": "Elite",
+    "industry": "Technology",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Ledgerstone Financial",
+    "tier": "Elite",
+    "industry": "Finance / Banking",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Skyline Auto",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Marchetti Studio",
+    "tier": "Elite",
+    "industry": "Fashion",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Cinderfield Fashion House",
+    "tier": "Elite",
+    "industry": "Fashion",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Frontrow Studios",
+    "tier": "Elite",
+    "industry": "Fashion",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Longitude Travel Co.",
+    "tier": "Elite",
+    "industry": "Airlines / Travel",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Ionstream Technologies",
+    "tier": "Elite",
+    "industry": "Technology",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Velvetline Fashion",
+    "tier": "Elite",
+    "industry": "Fashion",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Northwind Airlines",
+    "tier": "Elite",
+    "industry": "Airlines / Travel",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Aurora Automotive",
+    "tier": "Elite",
+    "industry": "Automotive",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Pulsegrid Technologies",
+    "tier": "Elite",
+    "industry": "Technology",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Oakstead & Co.",
+    "tier": "Elite",
+    "industry": "Home / Lifestyle",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Arcadia Gaming",
+    "tier": "Elite",
+    "industry": "Gaming / Esports",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Vantage Sport",
+    "tier": "Major",
+    "industry": "Sportswear",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Novacore Systems",
+    "tier": "Major",
+    "industry": "Technology",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ashcroft Financial",
+    "tier": "Major",
+    "industry": "Finance / Banking",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ferrante House",
+    "tier": "Major",
+    "industry": "Fashion",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Belmore & Co.",
+    "tier": "Major",
+    "industry": "Fashion",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ember Cola",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ironshield Insurance",
+    "tier": "Major",
+    "industry": "Insurance",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Aetherline",
+    "tier": "Major",
+    "industry": "Fashion",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Respawn Collective",
+    "tier": "Major",
+    "industry": "Gaming / Esports",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Glacier Springs",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Northlight Financial",
+    "tier": "Major",
+    "industry": "Finance / Banking",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ambient Devices",
+    "tier": "Major",
+    "industry": "Technology",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Apex Athletics",
+    "tier": "Major",
+    "industry": "Sportswear",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Cinderwick Home",
+    "tier": "Major",
+    "industry": "Home / Lifestyle",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Rally Sportwear",
+    "tier": "Major",
+    "industry": "Sportswear",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Vaultline Financial",
+    "tier": "Major",
+    "industry": "Finance / Banking",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Nexbyte Studios",
+    "tier": "Major",
+    "industry": "Gaming / Esports",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Signalcast",
+    "tier": "Major",
+    "industry": "Telecom",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Fernwell Living",
+    "tier": "Major",
+    "industry": "Home / Lifestyle",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ferro Horology",
+    "tier": "Major",
+    "industry": "Watches / Accessories",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Verrier Timepieces",
+    "tier": "Major",
+    "industry": "Watches / Accessories",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Novus Motors",
+    "tier": "Major",
+    "industry": "Automotive",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ironburst Energy",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ashford Motors",
+    "tier": "Major",
+    "industry": "Automotive",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ashworth & Row",
+    "tier": "Major",
+    "industry": "Fashion",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Basecamp Hydrate",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Corestrike Gear",
+    "tier": "Major",
+    "industry": "Sportswear",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Crestline Gear",
+    "tier": "Major",
+    "industry": "Sportswear",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Aldric & Sons",
+    "tier": "Major",
+    "industry": "Watches / Accessories",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Latency Zero Gear",
+    "tier": "Major",
+    "industry": "Gaming / Esports",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Zenith Air",
+    "tier": "Major",
+    "industry": "Airlines / Travel",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Parallax Systems",
+    "tier": "Major",
+    "industry": "Technology",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Clearwater Financial",
+    "tier": "Major",
+    "industry": "Finance / Banking",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Solstice Beverage Co.",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Ironvale Auto",
+    "tier": "Major",
+    "industry": "Automotive",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Rapture Cola",
+    "tier": "Major",
+    "industry": "Beverage",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Datapoint Technologies",
+    "tier": "Major",
+    "industry": "Technology",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Sidequest Media",
+    "tier": "Major",
+    "industry": "Gaming / Esports",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Driftwater Beverages",
+    "tier": "Mid-Market",
+    "industry": "Beverage",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Noctura",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Rally Energy",
+    "tier": "Mid-Market",
+    "industry": "Beverage",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Maison Verrier",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Critpath Gaming",
+    "tier": "Mid-Market",
+    "industry": "Gaming / Esports",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Meridian Motors",
+    "tier": "Mid-Market",
+    "industry": "Automotive",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Overdrive Sport",
+    "tier": "Mid-Market",
+    "industry": "Sportswear",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Pixelforge",
+    "tier": "Mid-Market",
+    "industry": "Gaming / Esports",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Skyline Airways",
+    "tier": "Mid-Market",
+    "industry": "Airlines / Travel",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Truelink Mobile",
+    "tier": "Mid-Market",
+    "industry": "Telecom",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Hexbyte Labs",
+    "tier": "Mid-Market",
+    "industry": "Technology",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Farview Capital",
+    "tier": "Mid-Market",
+    "industry": "Finance / Banking",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Pulseline Networks",
+    "tier": "Mid-Market",
+    "industry": "Telecom",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Northfizz",
+    "tier": "Mid-Market",
+    "industry": "Beverage",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Meridian Bank",
+    "tier": "Mid-Market",
+    "industry": "Finance / Banking",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Ironhide Motors",
+    "tier": "Mid-Market",
+    "industry": "Automotive",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Halstead & Co.",
+    "tier": "Mid-Market",
+    "industry": "Watches / Accessories",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Highvolt Energy Drink",
+    "tier": "Mid-Market",
+    "industry": "Beverage",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Circuitry Inc.",
+    "tier": "Mid-Market",
+    "industry": "Technology",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Wavepoint Mobile",
+    "tier": "Mid-Market",
+    "industry": "Telecom",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Summit Gear",
+    "tier": "Mid-Market",
+    "industry": "Sportswear",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Northstar Motors",
+    "tier": "Mid-Market",
+    "industry": "Automotive",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Farrow & Vane",
+    "tier": "Mid-Market",
+    "industry": "Watches / Accessories",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Combustion Energy Drink",
+    "tier": "Mid-Market",
+    "industry": "Beverage",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Fenwick Motors",
+    "tier": "Mid-Market",
+    "industry": "Automotive",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Cassian & Wolfe",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Crestguard Insurance",
+    "tier": "Mid-Market",
+    "industry": "Insurance",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Ironclasp",
+    "tier": "Mid-Market",
+    "industry": "Watches / Accessories",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Voyage Air",
+    "tier": "Mid-Market",
+    "industry": "Airlines / Travel",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Brightband",
+    "tier": "Mid-Market",
+    "industry": "Telecom",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Draper & Vine",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Nexora Tech",
+    "tier": "Mid-Market",
+    "industry": "Technology",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Overclock Gaming Gear",
+    "tier": "Mid-Market",
+    "industry": "Gaming / Esports",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Northgale Apparel",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Vectorplay Studios",
+    "tier": "Mid-Market",
+    "industry": "Gaming / Esports",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Loom & Larch",
+    "tier": "Mid-Market",
+    "industry": "Fashion",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Cryptonode Labs",
+    "tier": "Mid-Market",
+    "industry": "Technology",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Ridgeline Sport",
+    "tier": "Mid-Market",
+    "industry": "Sportswear",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Highgate Bank",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Ironbank Group",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Stride & Co.",
+    "tier": "Local",
+    "industry": "Sportswear",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Beacon Trust Financial",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Wingline Air",
+    "tier": "Local",
+    "industry": "Airlines / Travel",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Rosemere Fashion",
+    "tier": "Local",
+    "industry": "Fashion",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Fieldstone Capital Partners",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Falcon Auto Group",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Westgate Bank",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Basalt & Birch",
+    "tier": "Local",
+    "industry": "Home / Lifestyle",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Larkspur Motors",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Westbrook Motors",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Frameworks Esports",
+    "tier": "Local",
+    "industry": "Gaming / Esports",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Voltade",
+    "tier": "Local",
+    "industry": "Beverage",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Verdant Atelier",
+    "tier": "Local",
+    "industry": "Fashion",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Skyferry Airlines",
+    "tier": "Local",
+    "industry": "Airlines / Travel",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Farhaven Travel Co.",
+    "tier": "Local",
+    "industry": "Airlines / Travel",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Ridgeback Auto",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Northgate Timepieces",
+    "tier": "Local",
+    "industry": "Watches / Accessories",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Nightqueue Gaming",
+    "tier": "Local",
+    "industry": "Gaming / Esports",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Crestpoint Capital",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Coreware",
+    "tier": "Local",
+    "industry": "Technology",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Meridian Air",
+    "tier": "Local",
+    "industry": "Airlines / Travel",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Basecamp Athletics",
+    "tier": "Local",
+    "industry": "Sportswear",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Bytewave",
+    "tier": "Local",
+    "industry": "Technology",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Surge Energy",
+    "tier": "Local",
+    "industry": "Beverage",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Northbridge Bank",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Ironframe Esports",
+    "tier": "Local",
+    "industry": "Gaming / Esports",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Bluepeak Athletics",
+    "tier": "Local",
+    "industry": "Sportswear",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Peak Hydrate",
+    "tier": "Local",
+    "industry": "Beverage",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Redline Motors",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "GG Nation",
+    "tier": "Local",
+    "industry": "Gaming / Esports",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Lucent Couture",
+    "tier": "Local",
+    "industry": "Fashion",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Momentum Wear",
+    "tier": "Local",
+    "industry": "Sportswear",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Latticework Tech",
+    "tier": "Local",
+    "industry": "Technology",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Graystone Bank",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Cobalt Bank",
+    "tier": "Local",
+    "industry": "Finance / Banking",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Halcyon Motors",
+    "tier": "Local",
+    "industry": "Automotive",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Brightwave Beverages",
+    "tier": "Grassroots",
+    "industry": "Beverage",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Castellan Watches",
+    "tier": "Grassroots",
+    "industry": "Watches / Accessories",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Millhaven Goods",
+    "tier": "Grassroots",
+    "industry": "Home / Lifestyle",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Pinecrest Capital",
+    "tier": "Grassroots",
+    "industry": "Finance / Banking",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Lucent Horology",
+    "tier": "Grassroots",
+    "industry": "Watches / Accessories",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Ember Motorworks",
+    "tier": "Grassroots",
+    "industry": "Automotive",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Northwall Insurance Group",
+    "tier": "Grassroots",
+    "industry": "Insurance",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Harborline Financial",
+    "tier": "Grassroots",
+    "industry": "Finance / Banking",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Brightcase Timepieces",
+    "tier": "Grassroots",
+    "industry": "Watches / Accessories",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Graylock Automotive",
+    "tier": "Grassroots",
+    "industry": "Automotive",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Titan Sport",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Skyframe Technologies",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Altura Airlines",
+    "tier": "Grassroots",
+    "industry": "Airlines / Travel",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Ilyria Fashion House",
+    "tier": "Grassroots",
+    "industry": "Fashion",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Orbital Tech",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Frostline Beverages",
+    "tier": "Grassroots",
+    "industry": "Beverage",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Northloom Home",
+    "tier": "Grassroots",
+    "industry": "Home / Lifestyle",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Fiberloop Communications",
+    "tier": "Grassroots",
+    "industry": "Telecom",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Quantify Labs",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Fragline Gear",
+    "tier": "Grassroots",
+    "industry": "Gaming / Esports",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Harborlight Assurance",
+    "tier": "Grassroots",
+    "industry": "Insurance",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Waypoint Airlines",
+    "tier": "Grassroots",
+    "industry": "Airlines / Travel",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Loopcore Gaming",
+    "tier": "Grassroots",
+    "industry": "Gaming / Esports",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Brightline Technologies",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Lucent Devices",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Frontline Gear",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Fastbreak Co.",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Peak Form",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Sparkfire Cola",
+    "tier": "Grassroots",
+    "industry": "Beverage",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Continental Skies",
+    "tier": "Grassroots",
+    "industry": "Airlines / Travel",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Aftershock Athletics",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Playtrack Studios",
+    "tier": "Grassroots",
+    "industry": "Gaming / Esports",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Meridian Watch Co.",
+    "tier": "Grassroots",
+    "industry": "Watches / Accessories",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Zenith Motors",
+    "tier": "Grassroots",
+    "industry": "Automotive",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Sterling Motors",
+    "tier": "Grassroots",
+    "industry": "Automotive",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Signal Nine",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Fluent Technologies",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Rangefinder Systems",
+    "tier": "Grassroots",
+    "industry": "Technology",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Brightloom Home Goods",
+    "tier": "Grassroots",
+    "industry": "Home / Lifestyle",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Ironclad Sport",
+    "tier": "Grassroots",
+    "industry": "Sportswear",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Comet Automotive",
+    "tier": "Grassroots",
+    "industry": "Automotive",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Northline Telecom",
+    "tier": "Grassroots",
+    "industry": "Telecom",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Lumenreel Studios",
+    "tier": "Elite",
+    "industry": "Media / Entertainment",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Northlight Media",
+    "tier": "Major",
+    "industry": "Media / Entertainment",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Cascade Broadcasting",
+    "tier": "Mid-Market",
+    "industry": "Media / Entertainment",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Farview Entertainment",
+    "tier": "Local",
+    "industry": "Media / Entertainment",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Brightcue Media",
+    "tier": "Grassroots",
+    "industry": "Media / Entertainment",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Duskframe Studios",
+    "tier": "Elite",
+    "industry": "Media / Entertainment",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Openreel Media Group",
+    "tier": "Major",
+    "industry": "Media / Entertainment",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Vantage Broadcasting",
+    "tier": "Mid-Market",
+    "industry": "Media / Entertainment",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Crestline Realty",
+    "tier": "Local",
+    "industry": "Real Estate",
+    "minOvr": 40,
+    "minRep": 20
+  },
+  {
+    "name": "Northgate Properties",
+    "tier": "Grassroots",
+    "industry": "Real Estate",
+    "minOvr": 1,
+    "minRep": 0
+  },
+  {
+    "name": "Harborview Real Estate",
+    "tier": "Elite",
+    "industry": "Real Estate",
+    "minOvr": 85,
+    "minRep": 70
+  },
+  {
+    "name": "Fieldstone Realty Group",
+    "tier": "Major",
+    "industry": "Real Estate",
+    "minOvr": 75,
+    "minRep": 55
+  },
+  {
+    "name": "Meridian Properties",
+    "tier": "Mid-Market",
+    "industry": "Real Estate",
+    "minOvr": 60,
+    "minRep": 40
+  },
+  {
+    "name": "Ashwood Realty",
+    "tier": "Local",
+    "industry": "Real Estate",
+    "minOvr": 40,
+    "minRep": 20
+  }
+];

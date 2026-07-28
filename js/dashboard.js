@@ -3,7 +3,6 @@
    ========================================================================== */
 
 const PAYDAY_COOLDOWN_DAYS = 3;   // real-world days between salary collections
-const MORTGAGE_SALARY_MULT = 4;   // max loan = salary * this, minus existing debt
 const DOWN_PAYMENT_PCT = 0.20;
 const DECLARE_WINDOW_DAYS = 3;    // rolling window for self-declared transfer interest
 const DECLARE_MAX = 2;            // max declarations allowed within that window
@@ -11,6 +10,7 @@ const KID_COOLDOWN_DAYS = 21;     // "once every 3 weeks"
 const NEWS_COOLDOWN_HOURS = 12;
 const EXPENSE_COOLDOWN_HOURS = 18;
 const SCANDAL_CHANCE = 0.08;      // rare, rolled inside the expense check
+const SPONSOR_CHECK_COOLDOWN_DAYS = 4;
 
 let player = null;
 
@@ -249,15 +249,86 @@ function renderVentures(){
   ).join('') || '<div class="empty-state">No ventures launched.</div>';
 }
 
+function eligibleSponsorTier(){
+  const ovr = player.ovr||0, rep = player.reputation||0;
+  if (ovr>=85 && rep>=70) return 'Elite';
+  if (ovr>=75 && rep>=55) return 'Major';
+  if (ovr>=60 && rep>=40) return 'Mid-Market';
+  if (ovr>=40 && rep>=20) return 'Local';
+  return 'Grassroots';
+}
+
 function renderSponsorships(){
   document.getElementById('sponsorList').innerHTML = (player.sponsorships||[]).map(s=>
     `<div class="stat" style="margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;">
         <strong>${esc(s.brand)}</strong><span class="pill pill-gold">${esc(s.tier)}</span>
       </div>
-      <div class="label" style="margin-top:6px;">Since ${fmtDate(s.since)}</div>
+      <div class="label" style="margin-top:6px;">Since ${fmtDate(s.since)}${s.industry?' · '+esc(s.industry):''}</div>
     </div>`
-  ).join('') || '<div class="empty-state">No sponsorships yet — assigned by the club.</div>';
+  ).join('') || '<div class="empty-state">No sponsorships yet.</div>';
+  renderSponsorOffer();
+}
+
+function renderSponsorOffer(){
+  const last = player.lastSponsorCheck ? new Date(player.lastSponsorCheck) : null;
+  const ready = !last || (Date.now()-last) >= SPONSOR_CHECK_COOLDOWN_DAYS*86400000;
+  const btn = document.getElementById('sponsorCheckBtn');
+
+  if (player.pendingSponsorOffer){
+    btn.style.display = 'none';
+    const o = player.pendingSponsorOffer;
+    document.getElementById('sponsorOffer').innerHTML = `
+      <div class="stat" style="border-color:var(--gold-dim);">
+        <div class="label">Offer On The Table</div>
+        <div class="value" style="font-size:16px;">${esc(o.brand)}</div>
+        <div class="label" style="margin-top:4px;">${esc(o.tier)} tier · ${esc(o.industry)}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn btn-sm btn-solid" onclick="acceptSponsorOffer()">Accept</button>
+          <button class="btn btn-sm btn-ghost" onclick="declineSponsorOffer()">Decline</button>
+        </div>
+      </div>`;
+  } else {
+    btn.style.display = 'inline-flex';
+    btn.disabled = !ready;
+    btn.textContent = ready ? 'Check for Sponsorship Offers' : `Next check-in available in ${Math.ceil(SPONSOR_CHECK_COOLDOWN_DAYS - (Date.now()-last)/86400000)}d`;
+    document.getElementById('sponsorOffer').innerHTML = '';
+  }
+}
+
+async function checkForSponsorship(){
+  const last = player.lastSponsorCheck ? new Date(player.lastSponsorCheck) : null;
+  if (last && (Date.now()-last) < SPONSOR_CHECK_COOLDOWN_DAYS*86400000) return;
+  player.lastSponsorCheck = Date.now();
+
+  const tier = eligibleSponsorTier();
+  const already = new Set((player.sponsorships||[]).map(s=>s.brand));
+  const pool = SPONSOR_CATALOG.filter(b => b.tier === tier && !already.has(b.name));
+  if (!pool.length){
+    await save(); renderSponsorOffer();
+    return toast('No new offers at your current tier right now — try again in a few days.', true);
+  }
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  player.pendingSponsorOffer = { brand: pick.name, tier: pick.tier, industry: pick.industry, date: Date.now() };
+  await save();
+  renderSponsorOffer();
+  toast(`New offer: ${pick.name}!`);
+}
+
+async function acceptSponsorOffer(){
+  const o = player.pendingSponsorOffer;
+  if (!o) return;
+  player.sponsorships = player.sponsorships || [];
+  player.sponsorships.push({ brand: o.brand, tier: o.tier, industry: o.industry, since: Date.now() });
+  player.pendingSponsorOffer = null;
+  await save();
+  renderSponsorships();
+  webhookSponsorship(player.name, o.brand, o.tier);
+}
+async function declineSponsorOffer(){
+  player.pendingSponsorOffer = null;
+  await save();
+  renderSponsorOffer();
 }
 
 function renderReputation(){
@@ -789,18 +860,29 @@ async function financeProperty(){
   if (item.mode === 'rent') return toast('Rentals don\'t need financing — use Pay Cash to log a rental.', true);
   const location = document.getElementById('propLocation').value.trim() || 'Location not disclosed';
 
-  const existingDebt = (player.mortgages||[]).filter(m=>m.status==='Approved').reduce((s,m)=>s+m.balance,0);
-  const maxLoan = player.salary * MORTGAGE_SALARY_MULT - existingDebt;
   const loanNeeded = item.price * (1 - DOWN_PAYMENT_PCT);
   const downPayment = item.price * DOWN_PAYMENT_PCT;
+  const newMonthlyPayment = Math.round(loanNeeded/240); // 20-year amortization, flavor only
+
+  // Real underwriting factors, not just "salary x multiple":
+  const monthlyIncome = player.salary / 12;
+  const existingMortgagePayments = (player.mortgages||[]).filter(m=>m.status==='Approved').reduce((s,m)=>s+m.monthly,0);
+  const staffMonthlyCost = (player.staff||[]).reduce((s,x)=>s+x.weeklySalary,0) * 4.33;
+  const totalMonthlyDebt = existingMortgagePayments + staffMonthlyCost + newMonthlyPayment;
+  const dti = monthlyIncome > 0 ? totalMonthlyDebt / monthlyIncome : 1; // debt-to-income ratio
+  const nw = netWorth(player);
 
   let approved, reason;
-  if (loanNeeded > maxLoan){
-    approved = false; reason = 'requested loan exceeds what current salary supports against existing debt';
+  if (monthlyIncome <= 0){
+    approved = false; reason = 'no salary on file to qualify against';
   } else if (downPayment > player.bank.checking){
     approved = false; reason = "insufficient checking balance for the 20% down payment";
+  } else if (dti > 0.43){
+    approved = false; reason = `debt-to-income ratio of ${(dti*100).toFixed(0)}% exceeds the 43% underwriting limit (salary, existing mortgages, and staff wages all count against it)`;
+  } else if (nw < 0){
+    approved = false; reason = 'negative net worth on file';
   } else {
-    approved = true; reason = 'salary and existing debt load cleared underwriting';
+    approved = true; reason = `cleared underwriting at a ${(dti*100).toFixed(0)}% debt-to-income ratio`;
   }
 
   webhookMortgage(player.name, item.name, approved, approved ? null : reason);
@@ -820,7 +902,7 @@ async function financeProperty(){
   player.mortgages = player.mortgages || [];
   player.mortgages.push({
     property: item.name, status: 'Approved', reason,
-    balance: loanNeeded, monthly: Math.round(loanNeeded/240), date: Date.now()
+    balance: loanNeeded, monthly: newMonthlyPayment, date: Date.now()
   });
   await save();
   renderBanking(); renderStats(); renderProperties(); renderMortgageOptions();
@@ -862,16 +944,24 @@ async function cashOutInvestment(i){
   await maybeNetWorthShakeup();
 }
 
+const MARKET_SIM_COOLDOWN_HOURS = 6;
 async function simulateMarket(){
+  const last = player.lastMarketSim ? new Date(player.lastMarketSim) : null;
+  if (last && (Date.now()-last) < MARKET_SIM_COOLDOWN_HOURS*3600000){
+    const hrs = Math.ceil(MARKET_SIM_COOLDOWN_HOURS - (Date.now()-last)/3600000);
+    return toast(`Markets already moved this week — check back in ${hrs}h.`, true);
+  }
+  player.lastMarketSim = Date.now();
+
+  const bigMoves = [];
   (player.investments||[]).forEach(inv=>{
     const delta = (Math.random()*24)-11; // -11% to +13% swing per "week"
     inv.performancePct += delta;
+    if (Math.abs(delta) >= 15) bigMoves.push({ category: inv.category, delta }); // alert on THIS week's swing only
   });
   await save();
   renderInvestments(); renderStats();
-  (player.investments||[]).forEach(inv=>{
-    if (Math.abs(inv.performancePct) > 20) webhookInvestment(player.name, inv.category, inv.performancePct);
-  });
+  bigMoves.forEach(m => webhookInvestment(player.name, m.category, m.delta));
   toast('Market week simulated.');
 }
 
@@ -900,13 +990,64 @@ async function checkVenture(i){
 }
 
 const NEWS_EVENTS = [
+  // Media & interviews
   { headline: 'gave an interview praised for its honesty and warmth.', positive: true, rep: 4 },
-  { headline: 'was seen supporting a local youth club event.', positive: true, rep: 3 },
-  { headline: "made headlines after a lighthearted viral social media moment.", positive: true, rep: 5 },
-  { headline: 'is facing questions after a tax filing review.', positive: false, rep: -3 },
-  { headline: 'was involved in a minor public dispute that drew media attention.', positive: false, rep: -5 },
+  { headline: 'sat down for a long-form profile piece that fans loved.', positive: true, rep: 5 },
   { headline: 'declined to comment on swirling off-field rumors.', positive: false, rep: -1 },
+  { headline: 'gave a tone-deaf answer in a press conference that didn\'t land well.', positive: false, rep: -4 },
+  { headline: 'was praised for a thoughtful answer about mental health and pressure.', positive: true, rep: 6 },
+  { headline: 'walked out of a media session early, drawing criticism.', positive: false, rep: -5 },
+  // Community & charity visibility
+  { headline: 'was seen supporting a local youth club event.', positive: true, rep: 3 },
+  { headline: 'quietly funded a community sports program, which later came to light.', positive: true, rep: 7 },
+  { headline: 'visited a children\'s hospital, unannounced.', positive: true, rep: 8 },
+  { headline: 'skipped a scheduled community appearance without explanation.', positive: false, rep: -6 },
+  { headline: 'hosted a free coaching clinic for local kids.', positive: true, rep: 5 },
+  { headline: "was a no-show at a charity event they'd publicly committed to.", positive: false, rep: -7 },
+  // Social media
+  { headline: 'made headlines after a lighthearted viral social media moment.', positive: true, rep: 5 },
+  { headline: 'posted something that was widely seen as classy after a tough result.', positive: true, rep: 4 },
+  { headline: 'got into a public back-and-forth online that didn\'t reflect well.', positive: false, rep: -5 },
+  { headline: 'deleted a post after backlash over its wording.', positive: false, rep: -3 },
+  { headline: 'went viral for a wholesome moment with a fan.', positive: true, rep: 6 },
+  { headline: 'was criticized for an insensitive joke online.', positive: false, rep: -6 },
+  // Public disputes / minor controversy
+  { headline: 'was involved in a minor public dispute that drew media attention.', positive: false, rep: -5 },
+  { headline: 'is facing questions after a tax filing review.', positive: false, rep: -3 },
+  { headline: 'was spotted in a heated argument outside a restaurant.', positive: false, rep: -4 },
+  { headline: 'settled a dispute with a former business partner quietly.', positive: true, rep: 2 },
+  { headline: 'was cleared of wrongdoing after an internal club review.', positive: true, rep: 3 },
+  { headline: 'is at the center of a minor legal dispute over a canceled appearance.', positive: false, rep: -5 },
+  // Fan interactions & appearances
   { headline: "signed autographs for hours after a public appearance.", positive: true, rep: 3 },
+  { headline: 'stopped traffic to help a stranded fan, caught on camera.', positive: true, rep: 7 },
+  { headline: 'was seen brushing past fans without acknowledging them.', positive: false, rep: -4 },
+  { headline: 'surprised a local school with a visit.', positive: true, rep: 6 },
+  { headline: 'was a guest of honor at a fan meet-and-greet that ran long, gladly.', positive: true, rep: 4 },
+  { headline: 'canceled a scheduled fan event last minute.', positive: false, rep: -5 },
+  // Business & endorsements
+  { headline: 'was named the face of a new local campaign.', positive: true, rep: 4 },
+  { headline: 'faced backlash over comments made at a business event.', positive: false, rep: -4 },
+  { headline: 'was praised for backing a small local business publicly.', positive: true, rep: 5 },
+  { headline: 'was criticized for an ad seen as tone-deaf.', positive: false, rep: -6 },
+  { headline: 'launched a low-key initiative that impressed people once it got attention.', positive: true, rep: 5 },
+  // Lifestyle / off-season
+  { headline: 'was seen giving back during the off-season at a local shelter.', positive: true, rep: 6 },
+  { headline: 'was photographed living it up in a way some fans found excessive.', positive: false, rep: -3 },
+  { headline: 'kept a low, respectful profile during a difficult week for the club.', positive: true, rep: 3 },
+  { headline: 'drew criticism for a lavish public celebration seen as out of touch.', positive: false, rep: -5 },
+  { headline: 'was spotted mentoring a younger player, unprompted.', positive: true, rep: 5 },
+  // Neutral-ish / small
+  { headline: 'gave a fairly unremarkable press availability.', positive: true, rep: 1 },
+  { headline: 'was mentioned briefly in a roundup piece, nothing notable.', positive: true, rep: 1 },
+  { headline: 'had a quiet week with no notable headlines.', positive: true, rep: 0 },
+  { headline: 'was the subject of some light ribbing from teammates online.', positive: true, rep: 1 },
+  // Bigger positive swings (rarer via random pick but included for range)
+  { headline: 'was named to a "most respected athletes" community list.', positive: true, rep: 9 },
+  { headline: 'organized a surprise gesture for club staff that got attention.', positive: true, rep: 7 },
+  // Bigger negative swings
+  { headline: 'is facing real criticism after comments seen as dismissive of fans.', positive: false, rep: -8 },
+  { headline: 'was the subject of a widely-shared story about a bad interaction with staff.', positive: false, rep: -9 },
 ];
 async function checkClubNews(){
   const last = player.lastNewsCheck ? new Date(player.lastNewsCheck) : null;

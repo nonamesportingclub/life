@@ -31,6 +31,8 @@ function blankPlayer(username){
     investments: [],                // [{name, category, principal, performancePct}]
     mortgages: [],                  // [{property, status, reason, date}]
     sponsorships: [],               // [{brand, tier, since}]
+    pendingSponsorOffer: null,      // {brand, tier, industry, date}
+    lastSponsorCheck: null,
     businessVentures: [],           // [{name, type, status}]
     charityLog: [],                 // [{cause, note, date}]
     gambling: { wagered: 0, won: 0, lost: 0, biggestWin: 0, log: [] }, // log: [{game, bet, result, amount, date}]
