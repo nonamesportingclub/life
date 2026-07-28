@@ -32,5 +32,13 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
+
+    // Exception: this single doc tracks who's currently #1 on net worth, so the
+    // "new richest player" webhook only fires on an actual change of leader —
+    // written from any player's browser as they play, not just by the admin.
+    match /config/leaderboard {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }
