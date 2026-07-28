@@ -419,6 +419,18 @@ async function recordGamble(game, bet, won, payout){
 const CASINO_COOLDOWN_MS = 4000;
 let lastGambleTime = 0;
 
+const _actionCooldowns = {};
+function checkCooldown(key, ms){
+  const last = _actionCooldowns[key] || 0;
+  const remaining = ms - (Date.now() - last);
+  if (remaining > 0){
+    toast(`Slow down — try again in ${Math.ceil(remaining/1000)}s.`, true);
+    return false;
+  }
+  _actionCooldowns[key] = Date.now();
+  return true;
+}
+
 function takeBet(inputId){
   if (blockIfCrisis()) return null;
   const sinceLast = Date.now() - lastGambleTime;
@@ -556,16 +568,19 @@ function generateNpcName(){
 }
 
 async function propose(){
+  if (!checkCooldown('relationship', 5000)) return;
   const name = document.getElementById('partnerName').value.trim() || generateNpcName();
   player.relationship = { status:'Engaged', partnerName: name, since: null, prenup: false };
   await save(); renderRelationship();
   webhookEngagement(player.name, name);
 }
 async function callOffEngagement(){
+  if (!checkCooldown('relationship', 5000)) return;
   player.relationship = { status:'Single', partnerName:'', since:null, prenup:false };
   await save(); renderRelationship();
 }
 async function marry(){
+  if (!checkCooldown('relationship', 5000)) return;
   const prenup = document.getElementById('prenupCheck')?.checked || false;
   player.relationship.status = 'Married';
   player.relationship.since = Date.now();
@@ -574,6 +589,7 @@ async function marry(){
   webhookMarriage(player.name, player.relationship.partnerName);
 }
 async function fileDivorce(){
+  if (!checkCooldown('relationship', 5000)) return;
   if (!confirm('File for divorce? This affects your finances and reputation.')) return;
   const partnerName = player.relationship.partnerName;
   const prenup = player.relationship.prenup;
@@ -624,6 +640,7 @@ function renderStaff(){
 }
 async function hireStaff(){
   if (blockIfCrisis()) return;
+  if (!checkCooldown('spending', 3000)) return;
   const idx = Number(document.getElementById('staffPick').value);
   const item = STAFF_CATALOG[idx];
   if (!item) return;
@@ -656,6 +673,7 @@ function renderLuxury(){
 }
 async function buyLuxury(){
   if (blockIfCrisis()) return;
+  if (!checkCooldown('spending', 3000)) return;
   const idx = Number(document.getElementById('luxuryPick').value);
   const item = LUXURY_CATALOG[idx];
   if (!item) return;
@@ -741,6 +759,7 @@ function renderBankruptcy(){
   document.getElementById('bankruptcyCount').textContent = player.bankruptcyCount || 0;
 }
 async function fileBankruptcy(){
+  if (!inFinancialCrisis(player)) return toast("Bankruptcy is only available while you're in a financial crisis.", true);
   if (!confirm('File for bankruptcy? Mortgages clear, most assets are seized, and reputation takes a serious hit.')) return;
   player.mortgages = [];
   player.investments = [];
@@ -820,6 +839,7 @@ async function moveToChecking(){
 }
 
 async function donateCharity(){
+  if (!checkCooldown('spending', 3000)) return;
   const cause = document.getElementById('charityCause').value.trim();
   const amt = Number(document.getElementById('charityAmt').value);
   if (!cause || !amt || amt <= 0 || amt > player.bank.checking) return toast('Enter a cause and valid amount.', true);
@@ -843,6 +863,7 @@ function blockIfCrisis(){
 
 async function buyCar(){
   if (blockIfCrisis()) return;
+  if (!checkCooldown('spending', 3000)) return;
   const idx = Number(document.getElementById('carTier').value);
   const item = CAR_CATALOG[idx];
   if (!item) return toast('Pick a car first.', true);
@@ -858,6 +879,7 @@ async function buyCar(){
 
 async function buyPropertyCash(){
   if (blockIfCrisis()) return;
+  if (!checkCooldown('spending', 3000)) return;
   const idx = Number(document.getElementById('propTier').value);
   const item = PROPERTY_CATALOG[idx];
   if (!item) return toast('Pick a property first.', true);
@@ -875,6 +897,7 @@ async function buyPropertyCash(){
 
 async function financeProperty(){
   if (blockIfCrisis()) return;
+  if (!checkCooldown('spending', 3000)) return;
   const idx = Number(document.getElementById('propTier').value);
   const item = PROPERTY_CATALOG[idx];
   if (!item) return toast('Pick a property first.', true);
@@ -1089,8 +1112,17 @@ async function checkClubNews(){
 async function maybeNetWorthShakeup(){
   const all = await getAllPlayers();
   const ranked = all.filter(p=>!p.retired).sort((a,b)=> netWorth(b)-netWorth(a));
-  const rank = ranked.findIndex(p=>p.username===player.username) + 1;
-  if (rank === 1) webhookNetWorthShakeup(player.name, 1);
+  if (!ranked.length || ranked[0].username !== player.username) return; // not #1, nothing to announce
+  try{
+    const ref = CONFIG('leaderboard');
+    const doc = await ref.get();
+    const prevRichest = doc.exists ? doc.data().richest : null;
+    if (prevRichest === player.username) return; // already known #1, don't re-announce
+    await ref.set({ richest: player.username }, { merge: true });
+    webhookNetWorthShakeup(player.name, 1);
+  }catch(e){
+    console.error('Leaderboard shakeup check failed', e);
+  }
 }
 
 async function retirePlayer(){
