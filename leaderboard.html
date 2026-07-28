@@ -70,6 +70,7 @@ async function init(){
   const byROI = [...players].map(p=>({...p, roi: (p.investments||[]).reduce((s,i)=>s+i.performancePct,0)/((p.investments||[]).length||1)}))
     .sort((a,b)=>b.roi-a.roi);
   const byRep = [...players].sort((a,b)=>(b.reputation||0)-(a.reputation||0));
+  const byGambling = [...players].sort((a,b)=>(b.gambling?.biggestWin||0)-(a.gambling?.biggestWin||0));
 
   document.getElementById('boardGrid').innerHTML =
     board('Richest — Net Worth', byNetWorth, p=>fmtMoney(netWorth(p))) +
@@ -77,7 +78,8 @@ async function init(){
     board('Best Investors — Avg. ROI', byROI, p=>`${p.roi.toFixed(1)}%`) +
     board('Most Sponsorships', bySponsorships, p=>`${p.sponsorships?.length||0} deals`) +
     board('Most Charitable', byCharity, p=>fmtMoney((p.charityLog||[]).reduce((s,c)=>s+c.amount,0))) +
-    board('Fan Approval', byRep, p=>`${p.reputation}/100`);
+    board('Fan Approval', byRep, p=>`${p.reputation}/100`) +
+    board('High Roller — Biggest Casino Win', byGambling, p=>fmtMoney(p.gambling?.biggestWin||0));
 }
 init();
 </script>
