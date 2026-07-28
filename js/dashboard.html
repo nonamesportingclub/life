@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — No Name Sporting Club</title>
+<script>
+(function(){
+  fetch(window.location.pathname, { method: 'HEAD', cache: 'no-store' })
+    .then(res => {
+      const lastModified = res.headers.get('Last-Modified');
+      if (!lastModified) return;
+      const stored = localStorage.getItem('nnsc_last_seen_' + window.location.pathname);
+      if (stored && stored !== lastModified){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+        window.location.reload(true);
+      } else if (!stored){
+        localStorage.setItem('nnsc_last_seen_' + window.location.pathname, lastModified);
+      }
+    })
+    .catch(()=>{});
+})();
+</script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell" id="shell"><!-- sidebar injected --></div>
+
+<template id="mainTemplate">
+<main class="main">
+
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Player Dossier</span>
+      <h1 id="pageTitle">My Profile</h1>
+      <div class="page-sub" id="pageSub"></div>
+    </div>
+    <div class="actions no-print">
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">Print / Save Contract PDF</button>
+    </div>
+  </div>
+
+  <div class="player-card" id="playerCardWrap"></div>
+
+  <div class="grid grid-4" id="statGrid"></div>
+
+  <!-- Contract Dossier -->
+  <div class="card">
+    <div class="card-title">Official Contract</div>
+    <div class="dossier-wrap"><div class="dossier" id="dossier"></div></div>
+  </div>
+
+  <!-- Life Simulator -->
+  <div class="card">
+    <div class="card-title">Payday</div>
+    <p class="section-note">Collect your salary into your checking balance. One collection per in-game week.</p>
+    <button class="btn btn-solid" id="paydayBtn" onclick="collectPayday()">Collect Salary</button>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-title">Banking</div>
+      <div class="grid grid-2" style="margin-bottom:14px;">
+        <div class="stat"><div class="label">Checking</div><div class="value gold" id="checkingVal">$0</div></div>
+        <div class="stat"><div class="label">Savings</div><div class="value" id="savingsVal">$0</div></div>
+      </div>
+      <label for="transferAmt">Move to savings</label>
+      <input id="transferAmt" type="number" min="1" placeholder="Amount">
+      <button class="btn btn-sm" onclick="moveToSavings()">Transfer</button>
+      <hr class="hairline">
+      <label for="withdrawAmt">Move to checking</label>
+      <input id="withdrawAmt" type="number" min="1" placeholder="Amount">
+      <button class="btn btn-sm" onclick="moveToChecking()">Transfer</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Charity &amp; Community</div>
+      <p class="section-note">Donations spend from checking and boost your reputation.</p>
+      <label for="charityCause">Cause</label>
+      <input id="charityCause" type="text" placeholder="e.g. Youth Football Fund">
+      <label for="charityAmt">Amount</label>
+      <input id="charityAmt" type="number" min="1" placeholder="Amount">
+      <button class="btn btn-sm btn-solid" onclick="donateCharity()">Donate</button>
+      <hr class="hairline">
+      <div id="charityLog" style="font-size:12.5px;color:var(--muted);"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Garage <span class="pill pill-gold" id="carsCount"></span></div>
+    <label for="carSearch">Search 300+ cars</label>
+    <input id="carSearch" type="text" placeholder="Type a make or model…" oninput="filterCarSelect()">
+    <div class="field-row">
+      <div>
+        <label for="carTier">Choose a car</label>
+        <select id="carTier"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="buyCar()">Purchase</button>
+      </div>
+    </div>
+    <div id="carsList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Properties <span class="pill pill-gold" id="propsCount"></span></div>
+    <div class="field-row">
+      <div>
+        <label for="propTier">Choose a property</label>
+        <select id="propTier" onchange="updatePropBlurb()"></select>
+        <div class="section-note" id="propBlurb" style="margin-top:-10px;"></div>
+      </div>
+      <div>
+        <label for="propLocation">Location</label>
+        <input id="propLocation" type="text" placeholder="e.g. Downtown, near the training ground">
+      </div>
+    </div>
+    <div id="propBuyButtons">
+      <button class="btn btn-solid" onclick="buyPropertyCash()">Pay Cash</button>
+      <button class="btn" onclick="financeProperty()">Finance (Mortgage)</button>
+    </div>
+    <p class="section-note" style="margin-top:10px;">Financing requires a 20% down payment up front. Approval runs on a real debt-to-income check: salary, existing mortgage payments, and staff wages all count against you — not just your checking balance.</p>
+    <div id="propsList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Mortgages</div>
+    <p class="section-note">Loans taken out when financing a property above. Make payments here to pay down the balance.</p>
+    <div id="mortgageList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Investments</div>
+    <div class="field-row">
+      <div>
+        <label for="investCat">Category</label>
+        <select id="investCat">
+          <option>Stocks</option>
+          <option>Business Equity</option>
+          <option>Real Estate Fund</option>
+          <option>Crypto / Alt Assets</option>
+        </select>
+      </div>
+      <div>
+        <label for="investAmt">Amount (from checking)</label>
+        <input id="investAmt" type="number" min="1" placeholder="Amount">
+      </div>
+    </div>
+    <button class="btn btn-solid" onclick="makeInvestment()">Invest</button>
+    <button class="btn btn-ghost" onclick="simulateMarket()">Simulate Market Week</button>
+    <div id="investList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Business Ventures</div>
+    <div class="field-row">
+      <div>
+        <label for="bizName">Venture name</label>
+        <input id="bizName" type="text" placeholder="e.g. No Name Kicks Clothing">
+      </div>
+      <div>
+        <label for="bizType">Type</label>
+        <select id="bizType">
+          <option>Restaurant</option>
+          <option>Clothing Line</option>
+          <option>Media Company</option>
+          <option>Tech Startup</option>
+        </select>
+      </div>
+    </div>
+    <label for="bizAmt">Startup capital (from checking)</label>
+    <input id="bizAmt" type="number" min="1" placeholder="Amount">
+    <button class="btn btn-solid" onclick="startVenture()">Launch Venture</button>
+    <div id="bizList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card" id="crisisBanner" style="display:none;border-color:var(--danger);">
+    <div class="card-title" style="color:var(--danger);">⚠️ Financial Crisis</div>
+    <p class="section-note">Net worth has dropped below a sustainable level. Big purchases, investing, business ventures, luxury spending, and the casino are locked until this is resolved — see Debt &amp; Bankruptcy below.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Relationships &amp; Family</div>
+    <div id="relationshipBlock"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Personal Staff <span class="pill pill-gold" id="staffWeeklyCost"></span></div>
+    <p class="section-note">Weekly salaries are deducted automatically whenever you collect payday.</p>
+    <div class="field-row">
+      <div>
+        <label for="staffPick">Available to hire</label>
+        <select id="staffPick"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="hireStaff()">Hire</button>
+      </div>
+    </div>
+    <div id="staffList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Luxury Marketplace</div>
+    <p class="section-note">Jewelry, art, yachts, and jets add to your net worth. Vacations &amp; experiences are just for fun — money spent, no lasting value.</p>
+    <div class="field-row">
+      <div>
+        <label for="luxuryPick">Browse the marketplace</label>
+        <select id="luxuryPick"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" style="margin-bottom:14px;" onclick="buyLuxury()">Purchase</button>
+      </div>
+    </div>
+    <div id="luxuryList"></div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-title">Sponsorships</div>
+      <p class="section-note">Offers are tiered to your OVR and reputation — elite brands go to elite players, everyone else gets local and grassroots deals.</p>
+      <button class="btn btn-ghost" id="sponsorCheckBtn" onclick="checkForSponsorship()">Check for Sponsorship Offers</button>
+      <div id="sponsorOffer" style="margin-top:10px;"></div>
+      <hr class="hairline">
+      <div id="sponsorList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Reputation</div>
+      <div class="stat" style="margin-bottom:12px;">
+        <div class="label">Fan Approval</div>
+        <div class="value gold" id="repVal">—</div>
+      </div>
+      <button class="btn btn-ghost" onclick="checkClubNews()">Check Club News</button>
+      <div id="newsLog" style="margin-top:12px;font-size:12.5px;color:var(--muted);"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Random Expenses</div>
+    <p class="section-note">Life happens — check in occasionally for unexpected bills (and, rarely, a scandal).</p>
+    <button class="btn btn-ghost" id="expenseBtn" onclick="checkExpenses()">Check for Emergencies</button>
+    <div id="expenseLog" style="margin-top:12px;font-size:12.5px;color:var(--muted);"></div>
+  </div>
+
+  <div class="card" id="bankruptcyCard">
+    <div class="card-title">Debt &amp; Bankruptcy</div>
+    <p class="section-note">If debt piles up past a sustainable point, filing for bankruptcy restructures everything: mortgages are cleared, most assets are seized, and reputation takes a serious hit — but you get a clean slate.</p>
+    <div class="stat" style="margin-bottom:12px;">
+      <div class="label">Times Filed</div>
+      <div class="value" id="bankruptcyCount">0</div>
+    </div>
+    <button class="btn btn-danger" onclick="fileBankruptcy()">File for Bankruptcy</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Self-Declared Transfer Interest <span class="pill pill-gold" id="declareRemaining"></span></div>
+    <p class="section-note">Publicly declare you'd consider a move elsewhere. Limited to 2 declarations per rolling 3-day window.</p>
+    <div class="field-row">
+      <div><label for="declareClub">Club</label><input id="declareClub" type="text" placeholder="e.g. Real Madrid Roblox"></div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-solid" id="declareBtn" style="margin-bottom:14px;" onclick="declareInterest()">Declare Interest</button>
+      </div>
+    </div>
+    <div id="declareList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The Casino <span class="pill pill-gold" id="casinoNet"></span></div>
+    <p class="section-note">Wager straight from your checking balance. The house always keeps a slim edge.</p>
+
+    <div class="grid grid-2" style="margin-bottom:10px;">
+      <div class="stat"><div class="label">Total Wagered</div><div class="value" id="gWagered">$0</div></div>
+      <div class="stat"><div class="label">Biggest Win</div><div class="value good" id="gBiggest">$0</div></div>
+    </div>
+    <hr class="hairline">
+
+    <h4 style="font-size:13px;color:var(--gold);margin-bottom:8px;">Coin Flip <span style="color:var(--muted);font-weight:400;font-size:11px;">— 1.9x payout, 50/50</span></h4>
+    <div class="field-row">
+      <div><label for="coinBet">Bet</label><input id="coinBet" type="number" min="1" placeholder="Amount"></div>
+      <div><label for="coinSide">Call it</label><select id="coinSide"><option>Heads</option><option>Tails</option></select></div>
+    </div>
+    <button class="btn btn-solid btn-sm" onclick="playCoinFlip()">Flip</button>
+    <hr class="hairline">
+
+    <h4 style="font-size:13px;color:var(--gold);margin-bottom:8px;">Dice Duel <span style="color:var(--muted);font-weight:400;font-size:11px;">— 1.9x payout, beat the house roll</span></h4>
+    <div class="field-row">
+      <div><label for="diceBet">Bet</label><input id="diceBet" type="number" min="1" placeholder="Amount"></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn btn-solid btn-sm" style="margin-bottom:14px;" onclick="playDiceDuel()">Roll</button></div>
+    </div>
+    <hr class="hairline">
+
+    <h4 style="font-size:13px;color:var(--gold);margin-bottom:8px;">Slots <span style="color:var(--muted);font-weight:400;font-size:11px;">— up to 20x on a jackpot</span></h4>
+    <div class="field-row">
+      <div><label for="slotsBet">Bet</label><input id="slotsBet" type="number" min="1" placeholder="Amount"></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn btn-solid btn-sm" style="margin-bottom:14px;" onclick="playSlots()">Spin</button></div>
+    </div>
+    <div id="slotsReel" class="mono" style="font-size:28px;text-align:center;letter-spacing:14px;margin-bottom:10px;">— — —</div>
+    <hr class="hairline">
+
+    <h4 style="font-size:13px;color:var(--gold);margin-bottom:8px;">Roulette <span style="color:var(--muted);font-weight:400;font-size:11px;">— red/black pay 2x, green pays 35x</span></h4>
+    <div class="field-row">
+      <div><label for="rouletteBet">Bet</label><input id="rouletteBet" type="number" min="1" placeholder="Amount"></div>
+      <div><label for="rouletteColor">Color</label><select id="rouletteColor"><option>Red</option><option>Black</option><option>Green</option></select></div>
+    </div>
+    <button class="btn btn-solid btn-sm" onclick="playRoulette()">Spin the Wheel</button>
+
+    <hr class="hairline">
+    <div id="gambleLog" style="font-size:12.5px;color:var(--muted);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Career History</div>
+    <div class="timeline" id="careerTimeline"></div>
+  </div>
+
+  <div class="card" id="retireCard" style="display:none;">
+    <div class="card-title">Retirement</div>
+    <p class="section-note">You qualify to retire. This locks your profile permanently as a club legend page.</p>
+    <button class="btn btn-danger" onclick="retirePlayer()">Retire from No Name Sporting Club</button>
+  </div>
+
+</main>
+</template>
+
+<!-- Onboarding: one-time life choice modal -->
+<div class="modal-overlay" id="onboardModal" style="display:none;">
+  <div class="modal">
+    <h2 style="font-size:18px;">Choose Your Path</h2>
+    <p class="section-note">This is permanent — pick the direction that defines your career off the pitch.</p>
+    <div class="choice-card" onclick="chooseLife('Professional')">
+      <h4>Professional</h4><p>Career, training, long-term success.</p>
+    </div>
+    <div class="choice-card" onclick="chooseLife('Celebrity')">
+      <h4>Celebrity</h4><p>Fame, followers, brand deals.</p>
+    </div>
+    <div class="choice-card" onclick="chooseLife('Investor')">
+      <h4>Investor</h4><p>Money, business, wealth-building.</p>
+    </div>
+    <div class="choice-card" onclick="chooseLife('Balanced')">
+      <h4>Balanced</h4><p>A mix of everything.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/club.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/session.js"></script>
+<script src="js/webhooks.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
